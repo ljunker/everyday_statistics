@@ -144,5 +144,14 @@ def get_stats():
     })
 
 
+@app.route('/types', methods=['GET'])
+def get_event_types():
+    types = db.session.query(Event.type).distinct().all()
+    type_list = [t[0] for t in types]
+    return jsonify({
+        'event_types': type_list
+    })
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
