@@ -3,7 +3,7 @@ services:
     image: postgres:17
     container_name: everyday_db
     env_file:
-      - dbconn.env
+      - dbconn.env.example
     volumes:
       - pg_data:/var/lib/postgresql/data
     ports:
@@ -13,7 +13,7 @@ services:
     build: .
     container_name: everyday_web
     env_file:
-      - dbconn.env
+      - dbconn.env.example
     ports:
       - "45000:5000"
     depends_on:
