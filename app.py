@@ -68,7 +68,8 @@ def get_events():
             'type': event.type,
             'timestamp': event.timestamp.isoformat(),
             'latitude': event.latitude,
-            'longitude': event.longitude
+            'longitude': event.longitude,
+            'deleted': event.deleted
         })
 
     return jsonify({'events': results})
