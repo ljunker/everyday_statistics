@@ -86,7 +86,7 @@ curl -X POST http://localhost:5000/events   -H "Content-Type: application/json" 
 **Get stats:**
 
 ```bash
-curl http://localhost:5000/stats   -H "X-API-KEY: supersecretpoopkey"
+curl http://localhost:5000/stats   -H "X-API-KEY: supersecretkey"
 ```
 
 ---
