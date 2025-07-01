@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
@@ -10,6 +10,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+API_KEY = os.getenv('API_KEY')
+
 
 class Event(db.Model):
     __tablename__ = 'events'
@@ -18,6 +20,21 @@ class Event(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.now)
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
+
+
+@app.before_request
+def check_api_key():
+    if request.endpoint == 'index':
+        return  # if you have a root/index route that needs to be public
+    api_key = request.headers.get('X-API-KEY')
+    if api_key != API_KEY:
+        abort(401, description="Invalid or missing API key.")
+
+
+@app.route('/')
+def index():
+    return "Everyday Statistics Service"
+
 
 @app.route('/events', methods=['POST'])
 def create_event():
@@ -31,9 +48,10 @@ def create_event():
     db.session.commit()
     return jsonify({'message': 'Event recorded!'}), 201
 
+
 @app.route('/stats', methods=['GET'])
 def get_stats():
-    today = datetime.utcnow().date()
+    today = datetime.now().date()
     today_count = Event.query.filter(
         db.func.date(Event.timestamp) == today
     ).count()
@@ -44,6 +62,7 @@ def get_stats():
         'today_count': today_count,
         'total_count': total_count
     })
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
