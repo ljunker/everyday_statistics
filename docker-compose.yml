@@ -17,6 +17,8 @@ services:
       - dbconn.env
     ports:
       - "45000:5000"
+    volumes:
+      - .:/app
     depends_on:
       - db
     restart: unless-stopped

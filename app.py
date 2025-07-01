@@ -22,6 +22,7 @@ class Event(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.now(UTC), index=True)
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
+    deleted = db.Column(db.Boolean, default=False, index=True)
 
 
 @app.before_request
@@ -57,7 +58,7 @@ def get_stats():
     event_type = request.args.get('type')
 
     # Base query
-    query = Event.query
+    query = Event.query.filter_by(deleted=False)
     if event_type:
         query = query.filter(Event.type == event_type)
 
@@ -146,7 +147,7 @@ def get_stats():
 
 @app.route('/types', methods=['GET'])
 def get_event_types():
-    types = db.session.query(Event.type).distinct().all()
+    types = db.session.query(Event.type).filter_by(deleted=False).distinct().all()
     type_list = [t[0] for t in types]
     return jsonify({
         'event_types': type_list
@@ -154,18 +155,57 @@ def get_event_types():
 
 
 @app.route('/events', methods=['DELETE'])
-def delete_events_by_type():
+def soft_delete_events_by_type():
     event_type = request.args.get('type')
 
     if not event_type:
         return jsonify({'error': 'Missing type parameter'}), 400
 
-    deleted_count = Event.query.filter_by(type=event_type).delete()
+    updated_count = Event.query.filter_by(type=event_type, deleted=False) \
+                               .update({'deleted': True})
     db.session.commit()
 
     return jsonify({
-        'message': f'Deleted {deleted_count} events of type \"{event_type}\"'
+        'message': f'Marked {updated_count} events of type \"{event_type}\" as deleted'
     }), 200
+
+
+@app.route('/events/deleted', methods=['GET'])
+def get_deleted_events():
+    deleted_events = Event.query.filter_by(deleted=True).all()
+
+    results = []
+    for event in deleted_events:
+        results.append({
+            'id': event.id,
+            'type': event.type,
+            'timestamp': event.timestamp.isoformat()
+        })
+
+    return jsonify({'deleted_events': results})
+
+
+@app.route('/events/restore/<int:event_id>', methods=['POST'])
+def restore_event(event_id):
+    event = Event.query.get(event_id)
+    if not event:
+        return jsonify({'error': 'Event not found'}), 404
+
+    if not event.deleted:
+        return jsonify({'message': 'Event is already active'}), 400
+
+    event.deleted = False
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Restored event {event_id}',
+        'event': {
+            'id': event.id,
+            'type': event.type,
+            'timestamp': event.timestamp.isoformat()
+        }
+    })
+
 
 
 if __name__ == '__main__':
