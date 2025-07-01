@@ -52,6 +52,28 @@ def create_event():
     return jsonify({'message': 'Event recorded!'}), 201
 
 
+@app.route('/events', methods=['GET'])
+def get_events():
+    event_type = request.args.get('type')
+
+    query = Event.query
+    if event_type:
+        query = query.filter(Event.type == event_type)
+
+    events = query.all()
+    results = []
+    for event in events:
+        results.append({
+            'id': event.id,
+            'type': event.type,
+            'timestamp': event.timestamp.isoformat(),
+            'latitude': event.latitude,
+            'longitude': event.longitude
+        })
+
+    return jsonify({'events': results})
+
+
 @app.route('/stats', methods=['GET'])
 def get_stats():
     # Optional event type filter
