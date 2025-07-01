@@ -153,5 +153,20 @@ def get_event_types():
     })
 
 
+@app.route('/events', methods=['DELETE'])
+def delete_events_by_type():
+    event_type = request.args.get('type')
+
+    if not event_type:
+        return jsonify({'error': 'Missing type parameter'}), 400
+
+    deleted_count = Event.query.filter_by(type=event_type).delete()
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Deleted {deleted_count} events of type \"{event_type}\"'
+    }), 200
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
