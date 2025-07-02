@@ -213,7 +213,8 @@ def get_timeline():
         timeline.setdefault(date, []).append({
             'id': event.id,
             'time': time_str,
-            'type': event.type
+            'type': event.type,
+            'timestamp': event.timestamp.isoformat(),
         })
 
     return jsonify({'timeline': timeline})

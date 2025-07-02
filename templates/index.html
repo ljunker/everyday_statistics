@@ -145,6 +145,7 @@
           <form id="editEventForm">
             <div class="modal-header">
               <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+                <h6 class="modal-subtitle text-muted">Times and dates in UTC!</h6>
               <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -242,8 +243,13 @@
 
       for (const [date, events] of Object.entries(data.timeline)) {
         events.forEach(e => {
+          const utcDate = new Date(e.timestamp);
+          const localTime = utcDate.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          });
           timelineContent += `
-              <div class="timeline-hour">${e.time}</div>
+              <div class="timeline-hour">${localTime}</div>
               <div
                 class="timeline-event"
                 data-id="${e.id}"
@@ -264,6 +270,25 @@
       timelineDiv.innerHTML = html;
 
       document.getElementById('timelineDate').innerText = dateStr;
+    }
+
+    function giveEventListeners() {
+        // Attach click listeners after rendering
+        document.querySelectorAll('.timeline-event').forEach(el => {
+          el.addEventListener('click', () => {
+            const id = el.dataset.id;
+            const type = el.dataset.type;
+            const timestamp = el.dataset.timestamp;
+
+            document.getElementById('editEventId').value = id;
+            document.getElementById('editEventType').value = type;
+            document.getElementById('editEventTimestamp').value = timestamp;
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('editEventModal'));
+            modal.show();
+          });
+        });
     }
 
     document.getElementById('editEventForm').addEventListener('submit', async (e) => {
@@ -293,30 +318,12 @@
 
         // Reload timeline
         const selectedType = document.getElementById('typeSelect').value || '';
-        loadTimeline(selectedType);
+        await loadTimeline(selectedType);
+        giveEventListeners();
       } else {
         alert('Failed to update event.');
       }
     });
-
-    function giveEventListeners() {
-        // Attach click listeners after rendering
-        document.querySelectorAll('.timeline-event').forEach(el => {
-          el.addEventListener('click', () => {
-            const id = el.dataset.id;
-            const type = el.dataset.type;
-            const timestamp = el.dataset.timestamp;
-
-            document.getElementById('editEventId').value = id;
-            document.getElementById('editEventType').value = type;
-            document.getElementById('editEventTimestamp').value = timestamp;
-
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('editEventModal'));
-            modal.show();
-          });
-        });
-    }
 
     async function init() {
       const types = await fetchTypes();
