@@ -58,6 +58,7 @@
 <div class="container py-5">
     <h1 class="mb-4">Everyday Statistics Dashboard</h1>
     <a href="{{ url_for('logout') }}" class="btn btn-outline-danger mb-4">Logout</a>
+    <a href="/mappings-ui" class="btn btn-secondary mb-4">Mappings</a>
 
     <!-- Dropdown for selecting type -->
     <div class="mb-4">
@@ -67,6 +68,43 @@
         </select>
     </div>
 
+    <h2 class="mt-5">Day-by-Day Timeline for <span id="timelineDate"></span></h2>
+    <div class="mb-3">
+        <button id="prevDayBtn" class="btn btn-outline-secondary btn-sm">Previous Day</button>
+        <button id="nextDayBtn" class="btn btn-outline-secondary btn-sm">Next Day</button>
+    </div>
+    <div id="timeline"></div>
+    <!-- Edit Event Modal -->
+    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="editEventForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+                <h6 class="modal-subtitle text-muted">Times and dates in UTC!</h6>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="editEventId">
+              <div class="mb-3">
+                <label for="editEventType" class="form-label">Type</label>
+                <input type="text" class="form-control" id="editEventType" required>
+              </div>
+              <div class="mb-3">
+                <label for="editEventTimestamp" class="form-label">Timestamp</label>
+                <input type="datetime-local" class="form-control" id="editEventTimestamp" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="mt-5">Your Statistics</h2>
     <!-- Stats cards -->
     <div class="row">
         <div class="col-md-4 mb-3">
@@ -131,42 +169,6 @@
 
     <h2 class="mt-5">Your Events Chart</h2>
     <canvas id="eventsChart" height="100"></canvas>
-
-    <h2 class="mt-5">Day-by-Day Timeline for <span id="timelineDate"></span></h2>
-    <div class="mb-3">
-        <button id="prevDayBtn" class="btn btn-outline-secondary btn-sm">Previous Day</button>
-        <button id="nextDayBtn" class="btn btn-outline-secondary btn-sm">Next Day</button>
-    </div>
-    <div id="timeline"></div>
-    <!-- Edit Event Modal -->
-    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="editEventForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
-                <h6 class="modal-subtitle text-muted">Times and dates in UTC!</h6>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <input type="hidden" id="editEventId">
-              <div class="mb-3">
-                <label for="editEventType" class="form-label">Type</label>
-                <input type="text" class="form-control" id="editEventType" required>
-              </div>
-              <div class="mb-3">
-                <label for="editEventTimestamp" class="form-label">Timestamp</label>
-                <input type="datetime-local" class="form-control" id="editEventTimestamp" required>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">Save Changes</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
