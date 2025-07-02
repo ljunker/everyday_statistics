@@ -178,5 +178,45 @@ def restore_event(event_id):
     })
 
 
+from datetime import datetime, timedelta
+
+
+@app.route('/timeline', methods=['GET'])
+@api_key_required
+def get_timeline():
+    event_type = request.args.get('type')  # optional
+    date_str = request.args.get('date')  # optional
+
+    query = Event.query.filter_by(deleted=False)
+    if event_type:
+        query = query.filter(Event.type == event_type)
+
+    if date_str:
+        try:
+            day = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD.'}), 400
+
+        # Get events for that day only
+        start = datetime.combine(day, datetime.min.time())
+        end = datetime.combine(day + timedelta(days=1), datetime.min.time())
+        query = query.filter(Event.timestamp >= start, Event.timestamp < end)
+
+    events = query.order_by(Event.timestamp.asc()).all()
+
+    timeline = {}
+    if date_str:
+        timeline[date_str] = []
+    for event in events:
+        date = event.timestamp.strftime('%Y-%m-%d')
+        time_str = event.timestamp.strftime('%H:%M')
+        timeline.setdefault(date, []).append({
+            'time': time_str,
+            'type': event.type
+        })
+
+    return jsonify({'timeline': timeline})
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

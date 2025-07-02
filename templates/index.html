@@ -11,7 +11,48 @@
 
   <!-- Chart.js (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Timeline Styles -->
+  <style>
+    .timeline-container {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      row-gap: 1rem;
+      border-left: 2px solid #0d6efd; /* Bootstrap primary */
+      padding-left: 20px;
+      position: relative;
+      margin-top: 1rem;
+    }
+
+    .timeline-hour {
+      font-weight: bold;
+      color: #6c757d;
+      text-align: right;
+      padding-right: 10px;
+    }
+
+    .timeline-event {
+      position: relative;
+      padding: 0.5rem 1rem;
+      background: #e9ecef;
+      border-radius: 5px;
+    }
+
+    .timeline-event::before {
+      content: "";
+      position: absolute;
+      left: -30px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: #0d6efd;
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+  </style>
 </head>
+
 <body data-api-key="{{ api_key }}">
 
   <div class="container py-5">
@@ -81,7 +122,7 @@
       <div class="col-md-4 mb-3">
         <div class="card text-bg-light">
           <div class="card-body">
-            <h5 class="card-title">Busiest Hour</h5>
+            <h5 class="card-title">Most Active Hour</h5>
             <p class="card-text"><span id="most_active_hour">N/A</span></p>
           </div>
         </div>
@@ -90,10 +131,22 @@
 
     <h2 class="mt-5">Your Events Chart</h2>
     <canvas id="eventsChart" height="100"></canvas>
+
+    <h2 class="mt-5">Day-by-Day Timeline for <span id="timelineDate"></span></h2>
+    <div class="mb-3">
+      <button id="prevDayBtn" class="btn btn-outline-secondary btn-sm">Previous Day</button>
+      <button id="nextDayBtn" class="btn btn-outline-secondary btn-sm">Next Day</button>
+    </div>
+    <div id="timeline"></div>
   </div>
 
   <script>
-    let chart; // Store Chart.js instance
+    let chart; // Chart.js instance
+    let currentDate = new Date(); // Today's date
+
+    function formatDate(date) {
+      return date.toISOString().split('T')[0];
+    }
 
     async function fetchTypes() {
       const apiKey = document.body.dataset.apiKey;
@@ -123,7 +176,6 @@
       document.getElementById('most_active_day_count').innerText = data.most_active_day_count;
       document.getElementById('most_active_hour').innerText = data.most_active_hour !== null ? data.most_active_hour + ':00' : 'N/A';
 
-      // (Re)draw Chart
       const ctx = document.getElementById('eventsChart').getContext('2d');
 
       if (chart) {
@@ -146,11 +198,42 @@
       });
     }
 
+    async function loadTimeline(eventType = '') {
+      const apiKey = document.body.dataset.apiKey;
+      const dateStr = formatDate(currentDate);
+      const url = `/timeline?date=${dateStr}${eventType ? `&type=${encodeURIComponent(eventType)}` : ''}`;
+
+      const res = await fetch(url, {
+        headers: { 'X-API-KEY': apiKey }
+      });
+      const data = await res.json();
+      const timelineDiv = document.getElementById('timeline');
+
+      let timelineContent = '';
+
+      for (const [date, events] of Object.entries(data.timeline)) {
+        events.forEach(e => {
+          timelineContent += `
+            <div class="timeline-hour">${e.time}</div>
+            <div class="timeline-event">${e.type}</div>
+          `;
+        });
+      }
+
+      if (!timelineContent) {
+        timelineContent = '<p>No events for this day.</p>';
+      }
+
+      const html = `<div class="timeline-container">${timelineContent}</div>`;
+      timelineDiv.innerHTML = html;
+
+      document.getElementById('timelineDate').innerText = dateStr;
+    }
+
     async function init() {
       const types = await fetchTypes();
       const select = document.getElementById('typeSelect');
 
-      // Populate dropdown
       types.forEach(type => {
         const opt = document.createElement('option');
         opt.value = type;
@@ -158,13 +241,25 @@
         select.appendChild(opt);
       });
 
-      // Load stats initially (all)
       await loadStats('');
+      await loadTimeline('');
 
-      // Handle selection change
       select.addEventListener('change', () => {
         const selectedType = select.value || '';
         loadStats(selectedType);
+        loadTimeline(selectedType);
+      });
+
+      document.getElementById('prevDayBtn').addEventListener('click', () => {
+        currentDate.setDate(currentDate.getDate() - 1);
+        const selectedType = select.value || '';
+        loadTimeline(selectedType);
+      });
+
+      document.getElementById('nextDayBtn').addEventListener('click', () => {
+        currentDate.setDate(currentDate.getDate() + 1);
+        const selectedType = select.value || '';
+        loadTimeline(selectedType);
       });
     }
 
