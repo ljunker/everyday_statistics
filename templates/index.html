@@ -82,7 +82,7 @@
         <div class="card text-bg-light">
           <div class="card-body">
             <h5 class="card-title">Busiest Hour</h5>
-            <p class="card-text"><span id="busiest_hour">N/A</span></p>
+            <p class="card-text"><span id="most_active_hour">N/A</span></p>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@
       document.getElementById('longest_streak_days').innerText = data.longest_streak_days;
       document.getElementById('most_active_day').innerText = data.most_active_day || 'N/A';
       document.getElementById('most_active_day_count').innerText = data.most_active_day_count;
-      document.getElementById('busiest_hour').innerText = data.busiest_hour !== null ? data.busiest_hour + ':00' : 'N/A';
+      document.getElementById('most_active_hour').innerText = data.most_active_hour !== null ? data.most_active_hour + ':00' : 'N/A';
 
       // (Re)draw Chart
       const ctx = document.getElementById('eventsChart').getContext('2d');
