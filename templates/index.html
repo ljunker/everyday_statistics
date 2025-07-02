@@ -1,132 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Dashboard - Everyday Statistics</title>
+    <meta charset="UTF-8"/>
+    <title>Dashboard - Everyday Statistics</title>
 
-  <!-- Bootstrap CSS (CDN) -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet">
+    <!-- Bootstrap CSS (CDN) -->
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet">
 
-  <!-- Chart.js (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Timeline Styles -->
-  <style>
-    .timeline-container {
-      display: grid;
-      grid-template-columns: 80px 1fr;
-      row-gap: 1rem;
-      border-left: 2px solid #0d6efd; /* Bootstrap primary */
-      padding-left: 20px;
-      position: relative;
-      margin-top: 1rem;
-    }
+    <!-- Timeline Styles -->
+    <style>
+        .timeline-container {
+          display: grid;
+          grid-template-columns: 80px 1fr;
+          row-gap: 1rem;
+          border-left: 2px solid #0d6efd; /* Bootstrap primary */
+          padding-left: 20px;
+          position: relative;
+          margin-top: 1rem;
+        }
 
-    .timeline-hour {
-      font-weight: bold;
-      color: #6c757d;
-      text-align: right;
-      padding-right: 10px;
-    }
+        .timeline-hour {
+          font-weight: bold;
+          color: #6c757d;
+          text-align: right;
+          padding-right: 10px;
+        }
 
-    .timeline-event {
-      position: relative;
-      padding: 0.5rem 1rem;
-      background: #e9ecef;
-      border-radius: 5px;
-    }
+        .timeline-event {
+          position: relative;
+          padding: 0.5rem 1rem;
+          background: #e9ecef;
+          border-radius: 5px;
+        }
 
-    .timeline-event::before {
-      content: "";
-      position: absolute;
-      left: -30px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 12px;
-      height: 12px;
-      background: #0d6efd;
-      border-radius: 50%;
-      border: 2px solid #fff;
-    }
-  </style>
+        .timeline-event::before {
+          content: "";
+          position: absolute;
+          left: -30px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 12px;
+          height: 12px;
+          background: #0d6efd;
+          border-radius: 50%;
+          border: 2px solid #fff;
+        }
+    </style>
 </head>
 
 <body data-api-key="{{ api_key }}">
 
-  <div class="container py-5">
+<div class="container py-5">
     <h1 class="mb-4">Everyday Statistics Dashboard</h1>
     <a href="{{ url_for('logout') }}" class="btn btn-outline-danger mb-4">Logout</a>
 
     <!-- Dropdown for selecting type -->
     <div class="mb-4">
-      <label for="typeSelect" class="form-label">Select Event Type:</label>
-      <select id="typeSelect" class="form-select" style="max-width: 300px;">
-        <option value="">All Types</option>
-      </select>
+        <label for="typeSelect" class="form-label">Select Event Type:</label>
+        <select id="typeSelect" class="form-select" style="max-width: 300px;">
+            <option value="">All Types</option>
+        </select>
     </div>
 
     <!-- Stats cards -->
     <div class="row">
-      <div class="col-md-4 mb-3">
-        <div class="card text-bg-light">
-          <div class="card-body">
-            <h5 class="card-title">Today</h5>
-            <p class="card-text"><span id="today_count">0</span></p>
-          </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Today</h5>
+                    <p class="card-text"><span id="today_count">0</span></p>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div class="col-md-4 mb-3">
-        <div class="card text-bg-light">
-          <div class="card-body">
-            <h5 class="card-title">Total</h5>
-            <p class="card-text"><span id="total_count">0</span></p>
-          </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Total</h5>
+                    <p class="card-text"><span id="total_count">0</span></p>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div class="col-md-4 mb-3">
-        <div class="card text-bg-light">
-          <div class="card-body">
-            <h5 class="card-title">Average per Day</h5>
-            <p class="card-text"><span id="average_per_day">0</span></p>
-          </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Average per Day</h5>
+                    <p class="card-text"><span id="average_per_day">0</span></p>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
     <div class="row">
-      <div class="col-md-4 mb-3">
-        <div class="card text-bg-light">
-          <div class="card-body">
-            <h5 class="card-title">Longest Streak</h5>
-            <p class="card-text"><span id="longest_streak_days">0</span> days</p>
-          </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Longest Streak</h5>
+                    <p class="card-text"><span id="longest_streak_days">0</span> days</p>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div class="col-md-4 mb-3">
-        <div class="card text-bg-light">
-          <div class="card-body">
-            <h5 class="card-title">Most Active Day</h5>
-            <p class="card-text">
-              <span id="most_active_day">N/A</span>
-              (<span id="most_active_day_count">0</span>)
-            </p>
-          </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Most Active Day</h5>
+                    <p class="card-text">
+                        <span id="most_active_day">N/A</span>
+                        (<span id="most_active_day_count">0</span>)
+                    </p>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div class="col-md-4 mb-3">
-        <div class="card text-bg-light">
-          <div class="card-body">
-            <h5 class="card-title">Most Active Hour</h5>
-            <p class="card-text"><span id="most_active_hour">N/A</span></p>
-          </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Most Active Hour</h5>
+                    <p class="card-text"><span id="most_active_hour">N/A</span></p>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
     <h2 class="mt-5">Your Events Chart</h2>
@@ -134,13 +134,42 @@
 
     <h2 class="mt-5">Day-by-Day Timeline for <span id="timelineDate"></span></h2>
     <div class="mb-3">
-      <button id="prevDayBtn" class="btn btn-outline-secondary btn-sm">Previous Day</button>
-      <button id="nextDayBtn" class="btn btn-outline-secondary btn-sm">Next Day</button>
+        <button id="prevDayBtn" class="btn btn-outline-secondary btn-sm">Previous Day</button>
+        <button id="nextDayBtn" class="btn btn-outline-secondary btn-sm">Next Day</button>
     </div>
     <div id="timeline"></div>
-  </div>
+    <!-- Edit Event Modal -->
+    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="editEventForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="editEventId">
+              <div class="mb-3">
+                <label for="editEventType" class="form-label">Type</label>
+                <input type="text" class="form-control" id="editEventType" required>
+              </div>
+              <div class="mb-3">
+                <label for="editEventTimestamp" class="form-label">Timestamp</label>
+                <input type="datetime-local" class="form-control" id="editEventTimestamp" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+</div>
 
-  <script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
     let chart; // Chart.js instance
     let currentDate = new Date(); // Today's date
 
@@ -214,9 +243,16 @@
       for (const [date, events] of Object.entries(data.timeline)) {
         events.forEach(e => {
           timelineContent += `
-            <div class="timeline-hour">${e.time}</div>
-            <div class="timeline-event">${e.type}</div>
-          `;
+              <div class="timeline-hour">${e.time}</div>
+              <div
+                class="timeline-event"
+                data-id="${e.id}"
+                data-type="${e.type}"
+                data-timestamp="${date}T${e.time}"
+              >
+                ${e.type}
+              </div>
+            `;
         });
       }
 
@@ -228,6 +264,58 @@
       timelineDiv.innerHTML = html;
 
       document.getElementById('timelineDate').innerText = dateStr;
+    }
+
+    document.getElementById('editEventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById('editEventId').value;
+      const newType = document.getElementById('editEventType').value;
+      const newTimestamp = document.getElementById('editEventTimestamp').value;
+
+      const apiKey = document.body.dataset.apiKey;
+
+      const res = await fetch(`/events/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': apiKey
+        },
+        body: JSON.stringify({
+          type: newType,
+          timestamp: newTimestamp
+        })
+      });
+
+      if (res.ok) {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
+        modal.hide();
+
+        // Reload timeline
+        const selectedType = document.getElementById('typeSelect').value || '';
+        loadTimeline(selectedType);
+      } else {
+        alert('Failed to update event.');
+      }
+    });
+
+    function giveEventListeners() {
+        // Attach click listeners after rendering
+        document.querySelectorAll('.timeline-event').forEach(el => {
+          el.addEventListener('click', () => {
+            const id = el.dataset.id;
+            const type = el.dataset.type;
+            const timestamp = el.dataset.timestamp;
+
+            document.getElementById('editEventId').value = id;
+            document.getElementById('editEventType').value = type;
+            document.getElementById('editEventTimestamp').value = timestamp;
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('editEventModal'));
+            modal.show();
+          });
+        });
     }
 
     async function init() {
@@ -243,6 +331,7 @@
 
       await loadStats('');
       await loadTimeline('');
+      giveEventListeners();
 
       select.addEventListener('change', () => {
         const selectedType = select.value || '';
@@ -250,20 +339,22 @@
         loadTimeline(selectedType);
       });
 
-      document.getElementById('prevDayBtn').addEventListener('click', () => {
+      document.getElementById('prevDayBtn').addEventListener('click', async () => {
         currentDate.setDate(currentDate.getDate() - 1);
         const selectedType = select.value || '';
-        loadTimeline(selectedType);
+        await loadTimeline(selectedType);
+        giveEventListeners();
       });
 
-      document.getElementById('nextDayBtn').addEventListener('click', () => {
+      document.getElementById('nextDayBtn').addEventListener('click', async () => {
         currentDate.setDate(currentDate.getDate() + 1);
         const selectedType = select.value || '';
-        loadTimeline(selectedType);
+        await loadTimeline(selectedType);
+        giveEventListeners();
       });
     }
 
     init();
-  </script>
+</script>
 </body>
 </html>

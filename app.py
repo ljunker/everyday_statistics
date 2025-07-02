@@ -211,11 +211,32 @@ def get_timeline():
         date = event.timestamp.strftime('%Y-%m-%d')
         time_str = event.timestamp.strftime('%H:%M')
         timeline.setdefault(date, []).append({
+            'id': event.id,
             'time': time_str,
             'type': event.type
         })
 
     return jsonify({'timeline': timeline})
+
+
+@app.route('/events/<int:event_id>', methods=['PUT'])
+@api_key_required
+def update_event(event_id):
+    data = request.get_json()
+    event = Event.query.get(event_id)
+    if not event or event.deleted:
+        return jsonify({'error': 'Event not found'}), 404
+
+    event.type = data.get('type', event.type)
+    new_ts = data.get('timestamp')
+    if new_ts:
+        try:
+            event.timestamp = datetime.fromisoformat(new_ts)
+        except ValueError:
+            return jsonify({'error': 'Invalid timestamp format'}), 400
+
+    db.session.commit()
+    return jsonify({'message': 'Event updated'})
 
 
 if __name__ == '__main__':
