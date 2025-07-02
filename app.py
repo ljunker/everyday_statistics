@@ -8,7 +8,7 @@ import os
 from sqlalchemy import func
 
 from config import app
-from models import Event, db
+from models import (Event, TypeMapping, db)
 from services import get_event_stats, get_all_stats
 
 API_KEY = os.getenv('API_KEY')
@@ -61,6 +61,13 @@ def login():
 def logout():
     session.pop('logged_in', None)
     return redirect(url_for('login'))
+
+
+@app.route('/mappings-ui')
+@login_required
+def mappings_ui():
+    api_key = os.getenv('API_KEY')
+    return render_template('mappings.html', api_key=api_key)
 
 
 @app.route('/events', methods=['POST'])
@@ -178,6 +185,50 @@ def restore_event(event_id):
     })
 
 
+@app.route('/mappings', methods=['GET'])
+@api_key_required
+def list_mappings():
+    mappings = TypeMapping.query.all()
+    result = [{'id': m.id, 'type': m.type, 'display_name': m.display_name} for m in mappings]
+    return jsonify(result)
+
+
+@app.route('/mappings', methods=['POST'])
+@api_key_required
+def create_mapping():
+    data = request.get_json()
+    new_mapping = TypeMapping(type=data['type'], display_name=data['display_name'])
+    db.session.add(new_mapping)
+    db.session.commit()
+    return jsonify({'message': 'Mapping created'})
+
+
+@app.route('/mappings/<int:id>', methods=['PUT'])
+@api_key_required
+def update_mapping(id):
+    mapping = TypeMapping.query.get(id)
+    if not mapping:
+        return jsonify({'error': 'Mapping not found'}), 404
+
+    data = request.get_json()
+    mapping.type = data.get('type', mapping.type)
+    mapping.display_name = data.get('display_name', mapping.display_name)
+    db.session.commit()
+    return jsonify({'message': 'Mapping updated'})
+
+
+@app.route('/mappings/<int:id>', methods=['DELETE'])
+@api_key_required
+def delete_mapping(id):
+    mapping = TypeMapping.query.get(id)
+    if not mapping:
+        return jsonify({'error': 'Mapping not found'}), 404
+
+    db.session.delete(mapping)
+    db.session.commit()
+    return jsonify({'message': 'Mapping deleted'})
+
+
 from datetime import datetime, timedelta
 
 
@@ -210,11 +261,14 @@ def get_timeline():
     for event in events:
         date = event.timestamp.strftime('%Y-%m-%d')
         time_str = event.timestamp.strftime('%H:%M')
+        mapping = TypeMapping.query.filter_by(type=event.type).first()
+        display_name = mapping.display_name if mapping else event.type
         timeline.setdefault(date, []).append({
             'id': event.id,
             'time': time_str,
             'type': event.type,
             'timestamp': event.timestamp.isoformat(),
+            'display_name': display_name,
         })
 
     return jsonify({'timeline': timeline})

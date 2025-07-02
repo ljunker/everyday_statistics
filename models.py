@@ -13,3 +13,11 @@ class Event(db.Model):
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
     deleted = db.Column(db.Boolean, default=False, index=True)
+
+
+class TypeMapping(db.Model):
+    __tablename__ = 'type_mappings'
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(50), unique=True, nullable=False)
+    display_name = db.Column(db.String(100), nullable=False)
+

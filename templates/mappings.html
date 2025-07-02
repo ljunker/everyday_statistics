@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Type Mappings</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body data-api-key="{{ api_key }}">
+<div class="container py-5">
+  <h1 class="mb-4">Manage Type Mappings</h1>
+  <a href="/" class="btn btn-secondary mb-3">⬅ Back to Dashboard</a>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Display Name</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="mappingsTable"></tbody>
+  </table>
+
+  <h3 class="mt-5">Add New Mapping</h3>
+  <form id="newMappingForm">
+    <div class="mb-3">
+      <label for="newType" class="form-label">Type</label>
+      <input type="text" class="form-control" id="newType" required>
+    </div>
+    <div class="mb-3">
+      <label for="newDisplayName" class="form-label">Display Name</label>
+      <input type="text" class="form-control" id="newDisplayName" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Mapping</button>
+  </form>
+</div>
+
+<script>
+const apiKey = document.body.dataset.apiKey;
+
+async function loadMappings() {
+  const res = await fetch('/mappings', {
+    headers: { 'X-API-KEY': apiKey }
+  });
+  const data = await res.json();
+  const table = document.getElementById('mappingsTable');
+  table.innerHTML = '';
+  data.forEach(m => {
+    table.innerHTML += `
+      <tr data-id="${m.id}">
+        <td><input class="form-control type-input" value="${m.type}"></td>
+        <td><input class="form-control display-input" value="${m.display_name}"></td>
+        <td>
+          <button class="btn btn-sm btn-success save-btn">Save</button>
+          <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  // Attach handlers
+  document.querySelectorAll('.save-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const row = btn.closest('tr');
+      const id = row.dataset.id;
+      const type = row.querySelector('.type-input').value;
+      const display = row.querySelector('.display-input').value;
+
+      await fetch(`/mappings/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': apiKey
+        },
+        body: JSON.stringify({ type, display_name: display })
+      });
+      loadMappings();
+    };
+  });
+
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const row = btn.closest('tr');
+      const id = row.dataset.id;
+
+      await fetch(`/mappings/${id}`, {
+        method: 'DELETE',
+        headers: { 'X-API-KEY': apiKey }
+      });
+      loadMappings();
+    };
+  });
+}
+
+document.getElementById('newMappingForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const type = document.getElementById('newType').value;
+  const display = document.getElementById('newDisplayName').value;
+
+  await fetch('/mappings', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-KEY': apiKey
+    },
+    body: JSON.stringify({ type, display_name: display })
+  });
+
+  document.getElementById('newMappingForm').reset();
+  loadMappings();
+});
+
+loadMappings();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
