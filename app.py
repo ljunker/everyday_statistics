@@ -380,6 +380,19 @@ def import_db():
     db.session.bulk_save_objects(mappings)
     db.session.commit()
 
+    # Re-insert users
+    users = []
+    for u in data.get('users', []):
+        users.append(User(
+            id=u['id'],
+            username=u['username'],
+            password_hash=u['password_hash'],  # Use the hash directly
+            api_key=u['api_key'],
+            is_admin=u.get('is_admin', False)
+        ))
+    db.session.bulk_save_objects(users)
+    db.session.commit()
+
     # Re-insert events
     events = []
     for e in data.get('events', []):
@@ -388,7 +401,8 @@ def import_db():
             id=e['id'],
             type=e['type'],
             timestamp=ts,
-            deleted=e.get('deleted', False)
+            deleted=e.get('deleted', False),
+            user_id=e['user_id']
         ))
 
     db.session.bulk_save_objects(events)
