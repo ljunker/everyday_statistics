@@ -19,17 +19,19 @@ def api_key_required(f):
             abort(401, description="Invalid or missing API key.")
         g.current_user = user
         return f(*args, **kwargs)
+
     return decorated_function
 
 
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not getattr(g, 'current_user', None):
+        if not session.get('logged_in'):
             abort(401, description="Authentication required.")
-        if not g.current_user.is_admin:
+        if not session.get('is_admin'):
             abort(403, description="Admin access required.")
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -51,6 +53,8 @@ def dashboard():
 
 
 from werkzeug.security import check_password_hash
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -89,10 +93,8 @@ def mappings_ui():
 def create_event():
     data = request.get_json()
     event_type = data.get('type', 'unknown')
-    latitude = data.get('latitude', 0.0)
-    longitude = data.get('longitude', 0.0)
     timestamp = data.get('timestamp', datetime.now(UTC).isoformat())
-    event = Event(type=event_type, latitude=latitude, longitude=longitude, timestamp=datetime.fromisoformat(timestamp))
+    event = Event(type=event_type, timestamp=datetime.fromisoformat(timestamp), user_id=g.current_user.id)
     db.session.add(event)
     db.session.commit()
     return jsonify({'message': 'Event recorded!'}), 201
@@ -103,7 +105,7 @@ def create_event():
 def get_events():
     event_type = request.args.get('type')
 
-    query = Event.query
+    query = Event.query.filter_by(deleted=False, user_id=g.current_user.id)
     if event_type:
         query = query.filter(Event.type == event_type)
 
@@ -136,7 +138,7 @@ def stats():
 @app.route('/types', methods=['GET'])
 @api_key_required
 def get_event_types():
-    types = db.session.query(Event.type).filter_by(deleted=False).distinct().all()
+    types = db.session.query(Event.type).filter_by(deleted=False, user_id=g.current_user.id).distinct().all()
     type_list = [t[0] for t in types]
     return jsonify({
         'event_types': type_list
@@ -151,7 +153,7 @@ def soft_delete_events_by_type():
     if not event_type:
         return jsonify({'error': 'Missing type parameter'}), 400
 
-    updated_count = Event.query.filter_by(type=event_type, deleted=False) \
+    updated_count = Event.query.filter_by(type=event_type, deleted=False, user_id=g.current_user.id) \
         .update({'deleted': True})
     db.session.commit()
 
@@ -163,7 +165,7 @@ def soft_delete_events_by_type():
 @app.route('/events/deleted', methods=['GET'])
 @api_key_required
 def get_deleted_events():
-    deleted_events = Event.query.filter_by(deleted=True).all()
+    deleted_events = Event.query.filter_by(deleted=True, user_id=g.current_user.id).all()
 
     results = []
     for event in deleted_events:
@@ -252,7 +254,7 @@ def get_timeline():
     event_type = request.args.get('type')  # optional
     date_str = request.args.get('date')  # optional
 
-    query = Event.query.filter_by(deleted=False)
+    query = Event.query.filter_by(deleted=False, user_id=g.current_user.id)
     if event_type:
         query = query.filter(Event.type == event_type)
 
@@ -389,12 +391,36 @@ def admin():
     api_key = session['api_key']
     return render_template('admin.html', api_key=api_key)
 
+
 from werkzeug.security import generate_password_hash
 
-@app.route('/users', methods=['POST'])
+
+@app.route('/users/<int:id>', methods=['DELETE'])
+@api_key_required
+@admin_required
+def delete_user(id):
+    user = User.query.get(id)
+    if user and user.is_admin and g.current_user.id == id:
+        return jsonify({'error': 'Cannot delete yourself as an admin'}), 403
+    if not user:
+        return jsonify({'error': 'Not found'}), 404
+    events = Event.query.filter_by(user_id=id).all()
+    if events:
+        for event in events:
+            db.session.delete(event)
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'User deleted'})
+
+
+@app.route('/users', methods=['POST', 'GET'])
 @api_key_required
 @admin_required
 def create_user():
+    if request.method == 'GET':
+        users = User.query.all()
+        user_list = [{'id': u.id, 'username': u.username, 'is_admin': u.is_admin, 'api_key': u.api_key} for u in users]
+        return jsonify({'users': user_list})
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -421,6 +447,7 @@ def create_user():
 
 
 from flask.cli import with_appcontext
+
 
 @app.cli.command('create-admin')
 @with_appcontext
