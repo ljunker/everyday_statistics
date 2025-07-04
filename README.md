@@ -24,11 +24,13 @@ Copy the `dbconn.env.example` to `dbconn.env`:
 cp dbconn.env.example dbconn.env
 ```
 Configure the postgres user, password and db to anything you like (but make it secure ffs...).
-The `DATABASE_URL` and `API_KEY` is for the flask server. For the API key, you can use a strong random key generator like `openssl`:
+The `DATABASE_URL` and `FLASK_SECRET_KEY` are for the flask server. Generate a good secret key with:
 
 ```bash
 openssl rand -hex 32
 ```
+
+Then copy the generated key into your `.env` file as `FLASK_SECRET_KEY`.
 
 ---
 
@@ -48,6 +50,14 @@ db.create_all()
 exit()
 ```
 
+Then create an admin user with
+
+```bash
+docker-compose run web flask create-admin
+```
+
+You can create additional users later via the web app.
+
 ### 4️⃣ Build & start services
 
 Use Docker Compose to build and run everything:
@@ -66,7 +76,7 @@ This starts:
 
 ## 🔑 Authentication
 
-All requests must include the `X-API-KEY` header. (The one you generated with `openssl`)
+All requests must include the `X-API-KEY` header. It will be generated when you create a user.
 
 Example header:
 ```
