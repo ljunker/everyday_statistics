@@ -354,6 +354,7 @@ def export_db():
         'mappings': mappings_data
     })
 
+from werkzeug.security import generate_password_hash
 
 @app.route('/backup/import', methods=['POST'])
 @login_required
@@ -365,6 +366,7 @@ def import_db():
 
     # Clear existing data
     db.session.query(Event).delete()
+    db.session.query(User).delete()
     db.session.query(TypeMapping).delete()
     db.session.commit()
 
@@ -386,7 +388,7 @@ def import_db():
         users.append(User(
             id=u['id'],
             username=u['username'],
-            password_hash=u['password_hash'],  # Use the hash directly
+            password_hash=generate_password_hash("changeme"),  # Use the hash directly
             api_key=u['api_key'],
             is_admin=u.get('is_admin', False)
         ))
@@ -417,9 +419,6 @@ def import_db():
 def admin():
     api_key = session['api_key']
     return render_template('admin.html', api_key=api_key)
-
-
-from werkzeug.security import generate_password_hash
 
 
 @app.route('/users/<int:id>', methods=['DELETE'])
@@ -471,6 +470,26 @@ def create_user():
     db.session.commit()
 
     return jsonify({'username': username, 'api_key': api_key, 'is_admin': is_admin})
+
+
+@app.route('/users/<int:id>/password', methods=['PUT'])
+@api_key_required
+@admin_required
+def update_user_password(id):
+    data = request.get_json()
+    new_password = data.get('password')
+
+    if not new_password:
+        return jsonify({'error': 'Password required'}), 400
+
+    user = User.query.get(id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+
+    return jsonify({'message': f"Password updated for {user.username}."})
 
 
 from flask.cli import with_appcontext

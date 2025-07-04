@@ -31,6 +31,7 @@
         <th>Username</th>
         <th>Admin</th>
         <th>API Key</th>
+        <th>New Password</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -100,6 +101,10 @@
           <td>${u.is_admin ? '✅' : '❌'}</td>
           <td><code>${u.api_key}</code></td>
           <td>
+            <input type="password" class="form-control form-control-sm password-input" data-id="${u.id}" placeholder="New password">
+          </td>
+          <td>
+            <button class="btn btn-sm btn-success save-pw-btn" data-id="${u.id}">Save PW</button>
             <button class="btn btn-sm btn-danger delete-user-btn" data-id="${u.id}">Delete</button>
           </td>
         </tr>
@@ -115,6 +120,34 @@
           headers: { 'X-API-KEY': apiKey }
         });
         loadUsers();
+      });
+    });
+
+    document.querySelectorAll('.save-pw-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const pwInput = document.querySelector(`.password-input[data-id="${id}"]`);
+        const newPassword = pwInput.value.trim();
+        if (!newPassword) {
+          alert('Please enter a new password.');
+          return;
+        }
+
+        const res = await fetch(`/users/${id}/password`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-KEY': apiKey
+          },
+          body: JSON.stringify({ password: newPassword })
+        });
+
+        if (res.ok) {
+          alert('✅ Password updated.');
+          pwInput.value = ''; // Clear input
+        } else {
+          alert('❌ Failed to update password.');
+        }
       });
     });
   }
