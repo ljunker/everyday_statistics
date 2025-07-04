@@ -1,9 +1,8 @@
 import secrets
+from datetime import UTC
 from functools import wraps
 
-from flask import Flask, request, jsonify, abort, session, redirect, url_for, render_template, g
-from datetime import UTC
-import os
+from flask import request, jsonify, abort, session, redirect, url_for, render_template, g
 
 from config import app
 from models import (Event, TypeMapping, db, User)
@@ -311,18 +310,31 @@ def update_event(event_id):
 
 
 @app.route('/backup/export', methods=['GET'])
-@api_key_required
+@login_required
 @admin_required
 def export_db():
     events = Event.query.all()
     mappings = TypeMapping.query.all()
+    users = User.query.all()
+
+    users_data = [
+        {
+            'id': u.id,
+            'username': u.username,
+            'is_admin': u.is_admin,
+            'api_key': u.api_key,
+            'password_hash': u.password_hash  # Include password hash for context
+        }
+        for u in users
+    ]
 
     events_data = [
         {
             'id': e.id,
             'type': e.type,
             'timestamp': e.timestamp.isoformat(),
-            'deleted': e.deleted
+            'deleted': e.deleted,
+            'user_id': e.user_id  # Include user_id for context
         }
         for e in events
     ]
@@ -337,13 +349,14 @@ def export_db():
     ]
 
     return jsonify({
+        'users': users_data,
         'events': events_data,
         'mappings': mappings_data
     })
 
 
 @app.route('/backup/import', methods=['POST'])
-@api_key_required
+@login_required
 @admin_required
 def import_db():
     data = request.get_json()
