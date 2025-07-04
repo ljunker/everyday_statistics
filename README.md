@@ -103,7 +103,7 @@ docker compose up --build --force-recreate --remove-orphans
 
 ## 💡 Tips
 
-✅ Keep your `.env` out of version control (`.gitignore` it!).
-✅ For production, consider using Docker secrets for API keys.  
+- ✅ Keep your `.env` out of version control (`.gitignore` it!).
+- ✅ For production, consider using Docker secrets for API keys.  
 
 ---
