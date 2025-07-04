@@ -39,7 +39,7 @@ Then copy the generated key into your `.env` file as `FLASK_SECRET_KEY`.
 Before first run, create the tables:
 
 ```bash
-docker-compose run web flask shell
+docker compose run web flask shell
 ```
 
 Inside the Flask shell:
@@ -53,7 +53,7 @@ exit()
 Then create an admin user with
 
 ```bash
-docker-compose run web flask create-admin
+docker compose run web flask create-admin
 ```
 
 You can create additional users later via the web app.
@@ -63,7 +63,7 @@ You can create additional users later via the web app.
 Use Docker Compose to build and run everything:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 Add `-d` to run in detached mode (background).
