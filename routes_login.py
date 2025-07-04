@@ -20,7 +20,7 @@ def login():
             session['api_key'] = user.api_key
             return redirect(url_for('dashboard'))
         else:
-            return 'Invalid credentials', 401
+            return render_template('login.html', error='Invalid username or password')
 
     return render_template('login.html')
 
