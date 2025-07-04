@@ -2,5 +2,5 @@
 
 git pull
 docker compose up --build --force-recreate --remove-orphans -d
-docker compose run web alembic upgrade head
+docker compose run --rm web alembic upgrade head
 
