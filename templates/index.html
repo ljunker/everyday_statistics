@@ -60,6 +60,10 @@
     <a href="{{ url_for('logout') }}" class="btn btn-outline-danger mb-4">Logout</a>
     <a href="/mappings-ui" class="btn btn-secondary mb-4">Mappings</a>
 
+    <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addEventModal">
+      ➕ Add New Event
+    </button>
+
     <!-- Dropdown for selecting type -->
     <div class="mb-4">
         <label for="typeSelect" class="form-label">Select Event Type:</label>
@@ -103,6 +107,36 @@
         </div>
       </div>
     </div>
+
+    <!-- Add Event Modal -->
+    <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <form id="newEventForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addEventModalLabel">Add New Event</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="newEventType" class="form-label">Event Type</label>
+                <input type="text" class="form-control" id="newEventType" placeholder="e.g., poop" required>
+              </div>
+              <div class="mb-3">
+                <label for="newEventTimestamp" class="form-label">Timestamp (optional)</label>
+                <input type="datetime-local" class="form-control" id="newEventTimestamp">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Add Event</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
 
     <h2 class="mt-5">Your Statistics</h2>
     <!-- Stats cards -->
@@ -362,6 +396,44 @@
         giveEventListeners();
       });
     }
+
+    document.getElementById('newEventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const type = document.getElementById('newEventType').value.trim();
+      const timestampInput = document.getElementById('newEventTimestamp').value;
+      const apiKey = document.body.dataset.apiKey;
+
+      const body = { type };
+      if (timestampInput) {
+        body.timestamp = timestampInput;
+      }
+
+      const res = await fetch('/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-KEY': apiKey
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        // Hide the modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addEventModal'));
+        modal.hide();
+
+        document.getElementById('newEventForm').reset();
+
+        // Reload stats & timeline
+        const selectedType = document.getElementById('typeSelect').value || '';
+        await loadStats(selectedType);
+        await loadTimeline(selectedType);
+        giveEventListeners();
+      } else {
+        alert('Failed to add event.');
+      }
+    });
 
     init();
 </script>
