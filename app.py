@@ -1,34 +1,42 @@
+import secrets
 from functools import wraps
 
-from flask import Flask, request, jsonify, abort, session, redirect, url_for, render_template
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, UTC
+from flask import Flask, request, jsonify, abort, session, redirect, url_for, render_template, g
+from datetime import UTC
 import os
 
-from sqlalchemy import func
-
 from config import app
-from models import (Event, TypeMapping, db)
+from models import (Event, TypeMapping, db, User)
 from services import get_event_stats, get_all_stats
-
-API_KEY = os.getenv('API_KEY')
 
 
 def api_key_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get('X-API-KEY')
-        if api_key != API_KEY:
+        user = User.query.filter_by(api_key=api_key).first()
+        if not user:
             abort(401, description="Invalid or missing API key.")
+        g.current_user = user
         return f(*args, **kwargs)
+    return decorated_function
 
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not getattr(g, 'current_user', None):
+            abort(401, description="Authentication required.")
+        if not g.current_user.is_admin:
+            abort(403, description="Admin access required.")
+        return f(*args, **kwargs)
     return decorated_function
 
 
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get('logged_in'):
+        if not session['logged_in']:
             return redirect(url_for('login'))
         return f(*args, **kwargs)
 
@@ -38,18 +46,24 @@ def login_required(f):
 @app.route('/')
 @login_required
 def dashboard():
-    api_key = os.getenv('API_KEY')
+    api_key = session['api_key']
     return render_template('index.html', api_key=api_key)
 
 
+from werkzeug.security import check_password_hash
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
 
-        if username == os.getenv('LOGIN_USER') and password == os.getenv('LOGIN_PASS'):
+        user = User.query.filter_by(username=username).first()
+
+        if user and check_password_hash(user.password_hash, password):
             session['logged_in'] = True
+            session['username'] = user.username
+            session['is_admin'] = user.is_admin
+            session['api_key'] = user.api_key
             return redirect(url_for('dashboard'))
         else:
             return 'Invalid credentials', 401
@@ -66,7 +80,7 @@ def logout():
 @app.route('/mappings-ui')
 @login_required
 def mappings_ui():
-    api_key = os.getenv('API_KEY')
+    api_key = session['api_key']
     return render_template('mappings.html', api_key=api_key)
 
 
@@ -292,6 +306,144 @@ def update_event(event_id):
 
     db.session.commit()
     return jsonify({'message': 'Event updated'})
+
+
+@app.route('/backup/export', methods=['GET'])
+@api_key_required
+@admin_required
+def export_db():
+    events = Event.query.all()
+    mappings = TypeMapping.query.all()
+
+    events_data = [
+        {
+            'id': e.id,
+            'type': e.type,
+            'timestamp': e.timestamp.isoformat(),
+            'deleted': e.deleted
+        }
+        for e in events
+    ]
+
+    mappings_data = [
+        {
+            'id': m.id,
+            'type': m.type,
+            'display_name': m.display_name
+        }
+        for m in mappings
+    ]
+
+    return jsonify({
+        'events': events_data,
+        'mappings': mappings_data
+    })
+
+
+@app.route('/backup/import', methods=['POST'])
+@api_key_required
+@admin_required
+def import_db():
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'Invalid JSON'}), 400
+
+    # Clear existing data
+    db.session.query(Event).delete()
+    db.session.query(TypeMapping).delete()
+    db.session.commit()
+
+    # Re-insert mappings
+    mappings = []
+    for m in data.get('mappings', []):
+        mappings.append(TypeMapping(
+            id=m['id'],
+            type=m['type'],
+            display_name=m['display_name']
+        ))
+
+    db.session.bulk_save_objects(mappings)
+    db.session.commit()
+
+    # Re-insert events
+    events = []
+    for e in data.get('events', []):
+        ts = datetime.fromisoformat(e['timestamp'])
+        events.append(Event(
+            id=e['id'],
+            type=e['type'],
+            timestamp=ts,
+            deleted=e.get('deleted', False)
+        ))
+
+    db.session.bulk_save_objects(events)
+    db.session.commit()
+
+    return jsonify({'message': 'Database imported successfully'})
+
+
+@app.route('/admin')
+@login_required  # use your session auth
+@admin_required
+def admin():
+    api_key = session['api_key']
+    return render_template('admin.html', api_key=api_key)
+
+from werkzeug.security import generate_password_hash
+
+@app.route('/users', methods=['POST'])
+@api_key_required
+@admin_required
+def create_user():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    is_admin = data.get('is_admin', False)
+
+    if not username or not password:
+        return jsonify({'error': 'Username and password are required'}), 400
+
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({'error': 'User already exists'}), 400
+
+    api_key = secrets.token_hex(32)
+
+    new_user = User(username=username,
+                    password_hash=generate_password_hash(password),
+                    is_admin=is_admin,
+                    api_key=api_key
+                    )
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({'username': username, 'api_key': api_key, 'is_admin': is_admin})
+
+
+from flask.cli import with_appcontext
+
+@app.cli.command('create-admin')
+@with_appcontext
+def create_admin():
+    username = input('Admin username: ')
+    password = input('Admin password: ')
+
+    existing_admin = User.query.filter_by(username=username).first()
+    if existing_admin:
+        print(f"User {username} already exists.")
+        return
+
+    api_key = secrets.token_hex(32)
+    user = User(
+        username=username,
+        password_hash=generate_password_hash(password),
+        api_key=api_key,
+        is_admin=True
+    )
+    db.session.add(user)
+    db.session.commit()
+    print(f"✅ Created admin user {username}")
+    print(f"🔑 API key: {api_key}")
 
 
 if __name__ == '__main__':

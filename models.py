@@ -21,3 +21,11 @@ class TypeMapping(db.Model):
     type = db.Column(db.String(50), unique=True, nullable=False)
     display_name = db.Column(db.String(100), nullable=False)
 
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(512), nullable=False)
+    api_key = db.Column(db.String(128), unique=True, nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
