@@ -61,6 +61,29 @@ def soft_delete_events_by_type():
     }), 200
 
 
+@events_bp.route('/events/<int:event_id>', methods=['DELETE'])
+@api_key_required
+def delete_event(event_id):
+    event = Event.query.get(event_id)
+    if not event:
+        return jsonify({'error': 'Event not found'}), 404
+
+    if event.deleted:
+        return jsonify({'message': 'Event is already deleted'}), 400
+
+    event.deleted = True
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Deleted event {event_id}',
+        'event': {
+            'id': event.id,
+            'type': event.type,
+            'timestamp': event.timestamp.isoformat()
+        }
+    })
+
+
 @events_bp.route('/events/deleted', methods=['GET'])
 @api_key_required
 def get_deleted_events():
