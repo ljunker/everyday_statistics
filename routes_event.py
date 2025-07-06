@@ -14,7 +14,8 @@ def create_event():
     data = request.get_json()
     event_type = data.get('type', 'unknown')
     timestamp = data.get('timestamp', datetime.now(UTC).isoformat())
-    event = Event(type=event_type, timestamp=datetime.fromisoformat(timestamp), user_id=g.current_user.id)
+    quality = data.get('quality', None)
+    event = Event(type=event_type, timestamp=datetime.fromisoformat(timestamp), user_id=g.current_user.id, quality=quality)
     db.session.add(event)
     db.session.commit()
     return jsonify({'message': 'Event recorded!'}), 201
@@ -36,8 +37,7 @@ def get_events():
             'id': event.id,
             'type': event.type,
             'timestamp': event.timestamp.isoformat(),
-            'latitude': event.latitude,
-            'longitude': event.longitude,
+            'quality': event.quality,
             'deleted': event.deleted
         })
 
@@ -110,6 +110,7 @@ def update_event(event_id):
 
     event.type = data.get('type', event.type)
     new_ts = data.get('timestamp')
+    event.quality = data.get('quality', None)
     if new_ts:
         try:
             event.timestamp = datetime.fromisoformat(new_ts)
@@ -224,6 +225,7 @@ def get_timeline():
             'time': time_str,
             'type': event.type,
             'timestamp': event.timestamp.isoformat(),
+            'quality': event.quality,
             'display_name': display_name,
         })
 

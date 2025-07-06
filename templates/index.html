@@ -62,7 +62,7 @@
     <a href="/admin" class="btn btn-secondary mb-4">Admin</a>
 
     <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addEventModal">
-      ➕ Add New Event
+        ➕ Add New Event
     </button>
 
     <!-- Dropdown for selecting type -->
@@ -81,62 +81,71 @@
     <div id="timeline"></div>
     <!-- Edit Event Modal -->
     <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="editEventForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
-                <h6 class="modal-subtitle text-muted">Times and dates in UTC!</h6>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="editEventForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+                        <h6 class="modal-subtitle text-muted">Times and dates in UTC!</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editEventId">
+                        <div class="mb-3">
+                            <label for="editEventType" class="form-label">Type</label>
+                            <input type="text" class="form-control" id="editEventType" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEventTimestamp" class="form-label">Timestamp</label>
+                            <input type="datetime-local" class="form-control" id="editEventTimestamp" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editQuality" class="form-label">Quality (optional)</label>
+                            <input type="number" class="form-control" id="editQuality" placeholder="1-10" min="1"
+                                   max="10">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
             </div>
-            <div class="modal-body">
-              <input type="hidden" id="editEventId">
-              <div class="mb-3">
-                <label for="editEventType" class="form-label">Type</label>
-                <input type="text" class="form-control" id="editEventType" required>
-              </div>
-              <div class="mb-3">
-                <label for="editEventTimestamp" class="form-label">Timestamp</label>
-                <input type="datetime-local" class="form-control" id="editEventTimestamp" required>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">Save Changes</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            </div>
-          </form>
         </div>
-      </div>
     </div>
 
     <!-- Add Event Modal -->
     <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="newEventForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="addEventModalLabel">Add New Event</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="newEventForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addEventModalLabel">Add New Event</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newEventType" class="form-label">Event Type</label>
+                            <input type="text" class="form-control" id="newEventType" placeholder="e.g., poop" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newEventTimestamp" class="form-label">Timestamp (optional)</label>
+                            <input type="datetime-local" class="form-control" id="newEventTimestamp">
+                        </div>
+                        <div>
+                            <label for="newQuality">Quality (optional)</label>
+                            <input type="number" class="form-control" id="newQuality" placeholder="1-10" min="1"
+                                   max="10">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Add Event</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
             </div>
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="newEventType" class="form-label">Event Type</label>
-                <input type="text" class="form-control" id="newEventType" placeholder="e.g., poop" required>
-              </div>
-              <div class="mb-3">
-                <label for="newEventTimestamp" class="form-label">Timestamp (optional)</label>
-                <input type="datetime-local" class="form-control" id="newEventTimestamp">
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="submit" class="btn btn-primary">Add Event</button>
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            </div>
-          </form>
         </div>
-      </div>
     </div>
-
 
 
     <h2 class="mt-5">Your Statistics</h2>
@@ -292,8 +301,9 @@
                 data-id="${e.id}"
                 data-type="${e.type}"
                 data-timestamp="${date}T${e.time}"
+                data-quality="${e.quality || ''}"
               >
-                ${e.display_name}
+                ${e.display_name} ${e.quality ? `(${e.quality})` : ''}
               </div>
             `;
         });
@@ -316,10 +326,14 @@
             const id = el.dataset.id;
             const type = el.dataset.type;
             const timestamp = el.dataset.timestamp;
+            const quality = el.dataset.quality || '';
+            console.log(el.dataset.quality);
+            console.log(quality);
 
             document.getElementById('editEventId').value = id;
             document.getElementById('editEventType').value = type;
             document.getElementById('editEventTimestamp').value = timestamp;
+            document.getElementById('editQuality').value = quality;
 
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('editEventModal'));
@@ -334,6 +348,7 @@
       const id = document.getElementById('editEventId').value;
       const newType = document.getElementById('editEventType').value;
       const newTimestamp = document.getElementById('editEventTimestamp').value;
+      const newQuality = document.getElementById('editQuality').value;
 
       const apiKey = document.body.dataset.apiKey;
 
@@ -345,7 +360,8 @@
         },
         body: JSON.stringify({
           type: newType,
-          timestamp: newTimestamp
+          timestamp: newTimestamp,
+          quality: newQuality ? parseInt(newQuality, 10) : undefined
         })
       });
 
@@ -403,12 +419,23 @@
 
       const type = document.getElementById('newEventType').value.trim();
       const timestampInput = document.getElementById('newEventTimestamp').value;
+      const qualityInput = document.getElementById('newQuality').value;
       const apiKey = document.body.dataset.apiKey;
 
       const body = { type };
       if (timestampInput) {
         body.timestamp = timestampInput;
       }
+
+        if (qualityInput) {
+            const quality = parseInt(qualityInput, 10);
+            if (quality >= 1 && quality <= 10) {
+            body.quality = quality;
+            } else {
+            alert('Quality must be between 1 and 10.');
+            return;
+            }
+        }
 
       const res = await fetch('/events', {
         method: 'POST',

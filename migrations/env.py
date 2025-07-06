@@ -19,6 +19,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from app import db
+from models import TypeMapping, User, Event
 target_metadata = db.metadata
 
 # other values from the config, defined by the needs of env.py,
