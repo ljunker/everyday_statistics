@@ -34,7 +34,8 @@ def export_db():
             'type': e.type,
             'timestamp': e.timestamp.isoformat(),
             'deleted': e.deleted,
-            'user_id': e.user_id  # Include user_id for context
+            'user_id': e.user_id,
+            'quality': e.quality
         }
         for e in events
     ]
@@ -105,7 +106,8 @@ def import_db():
             type=e['type'],
             timestamp=ts,
             deleted=e.get('deleted', False),
-            user_id=e['user_id']
+            user_id=e['user_id'],
+            quality=e.get('quality', None),
         ))
 
     db.session.bulk_save_objects(events)
