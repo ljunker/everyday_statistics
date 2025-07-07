@@ -253,3 +253,55 @@ def get_timeline():
         })
 
     return jsonify({'timeline': timeline})
+
+
+@events_bp.route('/stats/<type1>_to_<type2>', methods=['GET'])
+@api_key_required
+def generic_time_gap(type1, type2):
+    user_id = g.current_user.id
+
+    mapping_type1 = TypeMapping.query.filter_by(type=type1).first()
+    mapping_type2 = TypeMapping.query.filter_by(type=type2).first()
+
+    # Get both types for this user, ordered by timestamp
+    events = Event.query.filter(
+        Event.deleted == False,
+        Event.user_id == user_id,
+        Event.type.in_([type1, type2])
+    ).order_by(Event.timestamp).all()
+
+    results = []
+    last_type1 = None
+
+    for event in events:
+        if event.type == type1:
+            last_type1 = event.timestamp
+        elif event.type == type2 and last_type1:
+            delta = event.timestamp - last_type1
+            # Filter out huge or tiny deltas (optional)
+            if timedelta(minutes=1) < delta < timedelta(hours=24):
+                results.append(delta.total_seconds() / 60)
+            last_type1 = None  # reset so only one type1 per type2
+
+    if not results:
+        return jsonify({
+            'type1': type1,
+            'type2': type2,
+            'count': 0,
+            'message': f"No '{type1}' ➡️ '{type2}' pairings found!"
+        })
+
+    avg_minutes = sum(results) / len(results)
+    min_minutes = min(results)
+    max_minutes = max(results)
+
+    return jsonify({
+        'type1': type1,
+        'mapping_type1': mapping_type1.display_name if mapping_type1 else type1,
+        'type2': type2,
+        'mapping_type2': mapping_type2.display_name if mapping_type2 else type2,
+        'count': len(results),
+        'average_minutes': round(avg_minutes, 2),
+        'min_minutes': round(min_minutes, 2),
+        'max_minutes': round(max_minutes, 2)
+    })

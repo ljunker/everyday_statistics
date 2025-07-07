@@ -147,6 +147,36 @@
         </div>
     </div>
 
+    <h2 class="mt-5">Gap Statistics</h2>
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <label class="form-label">First Type (type1):</label>
+        <select id="type1Select" class="form-select">
+          <!-- filled dynamically -->
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Then Type (type2):</label>
+        <select id="type2Select" class="form-select">
+          <!-- filled dynamically -->
+        </select>
+      </div>
+      <div class="col-md-4 d-flex align-items-end">
+        <button id="loadGapStats" class="btn btn-primary w-100">Show Gap Stat</button>
+      </div>
+    </div>
+
+    <div class="card text-bg-light">
+      <div class="card-body">
+        <h5 class="card-title">⏱️ Time from <span id="gapType1">X</span> to <span id="gapType2">Y</span></h5>
+        <p class="card-text">Avg: <span id="gapAvg">N/A</span> min</p>
+        <p class="card-text">Min: <span id="gapMin">N/A</span> min</p>
+        <p class="card-text">Max: <span id="gapMax">N/A</span> min</p>
+        <p class="card-text">Pairs: <span id="gapCount">0</span></p>
+      </div>
+    </div>
+
+
 
     <h2 class="mt-5">Your Statistics</h2>
     <!-- Stats cards -->
@@ -487,6 +517,59 @@
         alert('Failed to add event.');
       }
     });
+
+    async function loadGapStats(type1, type2) {
+      const apiKey = document.body.dataset.apiKey;
+
+      const res = await fetch(`/stats/${type1}_to_${type2}`, {
+        headers: { 'X-API-KEY': apiKey }
+      });
+
+      const data = await res.json();
+      document.getElementById('gapType1').innerText = data.mapping_type1 || type1;
+      document.getElementById('gapType2').innerText = data.mapping_type2 || type2;
+
+      document.getElementById('gapAvg').innerText = data.average_minutes || 'N/A';
+      document.getElementById('gapMin').innerText = data.min_minutes || 'N/A';
+      document.getElementById('gapMax').innerText = data.max_minutes || 'N/A';
+      document.getElementById('gapCount').innerText = data.count || 0;
+    }
+
+    document.getElementById('loadGapStats').addEventListener('click', () => {
+      const type1 = document.getElementById('type1Select').value;
+      const type2 = document.getElementById('type2Select').value;
+
+      if (!type1 || !type2) {
+        alert('Select both types!');
+        return;
+      }
+      loadGapStats(type1, type2);
+    });
+
+    // Fill type dropdowns on init:
+    async function fillGapTypeDropdowns() {
+      const apiKey = document.body.dataset.apiKey;
+      const res = await fetch('/types', { headers: { 'X-API-KEY': apiKey } });
+      const types = (await res.json()).event_types;
+
+      const s1 = document.getElementById('type1Select');
+      const s2 = document.getElementById('type2Select');
+
+      types.forEach(type => {
+        const opt1 = document.createElement('option');
+        opt1.value = type;
+        opt1.innerText = type;
+        s1.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = type;
+        opt2.innerText = type;
+        s2.appendChild(opt2);
+      });
+    }
+
+    fillGapTypeDropdowns();
+
 
     init();
 </script>
