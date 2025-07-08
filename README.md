@@ -24,7 +24,7 @@ Copy the `dbconn.env.example` to `dbconn.env`:
 cp dbconn.env.example dbconn.env
 ```
 Configure the postgres user, password and db to anything you like (but make it secure ffs...).
-The `DATABASE_URL` and `FLASK_SECRET_KEY` are for the flask server. Generate a good secret key with:
+The `DATABASE_URL` `PROMETHEUS_SECRET_KEY` and `FLASK_SECRET_KEY` are for the flask server. Generate a good secret key with:
 
 ```bash
 openssl rand -hex 32
