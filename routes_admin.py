@@ -11,7 +11,7 @@ admin_bp = Blueprint('admin', __name__)
 
 
 @admin_bp.route('/backup/export', methods=['GET'])
-@login_required
+@api_key_required
 @admin_required
 def export_db():
     events = Event.query.all()
@@ -61,7 +61,7 @@ from werkzeug.security import generate_password_hash
 
 
 @admin_bp.route('/backup/import', methods=['POST'])
-@login_required
+@api_key_required
 @admin_required
 def import_db():
     data = request.get_json()

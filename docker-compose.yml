@@ -23,5 +23,16 @@ services:
       - db
     restart: unless-stopped
 
+  tinyauth:
+    image: ghcr.io/steveiliop56/tinyauth:v3
+    container_name: tinyauth
+    restart: unless-stopped
+    environment:
+      - SECRET=2lx45p6tG6WX46vE8W99pjL2yyWdhWe9
+      - APP_URL=https://auth.njord.ljunker.de
+      - USERS=lars:$$2a$$10$$WojvOfhXsER/kiPgzJTubujcENK4t5oIAnoYStL08avdZ4Pe8uGvq
+    ports:
+      - "43000:3000"
+
 volumes:
   pg_data:
