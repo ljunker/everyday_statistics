@@ -3,7 +3,7 @@ from pytz import UTC
 
 from decorators import api_key_required
 from models import Event, db, TypeMapping
-from services import get_event_stats, get_all_stats
+from services import get_event_stats, get_all_stats, get_stats_t1_to_t2_for_user
 
 events_bp = Blueprint('events', __name__)
 
@@ -263,44 +263,14 @@ def generic_time_gap(type1, type2):
     mapping_type1 = TypeMapping.query.filter_by(type=type1).first()
     mapping_type2 = TypeMapping.query.filter_by(type=type2).first()
 
-    # Get both types for this user, ordered by timestamp
-    events = Event.query.filter(
-        Event.deleted == False,
-        Event.user_id == user_id,
-        Event.type.in_([type1, type2])
-    ).order_by(Event.timestamp).all()
-
-    results = []
-    last_type1 = None
-
-    for event in events:
-        if event.type == type1:
-            last_type1 = event.timestamp
-        elif event.type == type2 and last_type1:
-            delta = event.timestamp - last_type1
-            # Filter out huge or tiny deltas (optional)
-            if timedelta(minutes=1) < delta < timedelta(hours=24):
-                results.append(delta.total_seconds() / 60)
-            last_type1 = None  # reset so only one type1 per type2
-
-    if not results:
-        return jsonify({
-            'type1': type1,
-            'type2': type2,
-            'count': 0,
-            'message': f"No '{type1}' ➡️ '{type2}' pairings found!"
-        })
-
-    avg_minutes = sum(results) / len(results)
-    min_minutes = min(results)
-    max_minutes = max(results)
+    results_length, avg_minutes, min_minutes, max_minutes = get_stats_t1_to_t2_for_user(type1, type2, user_id)
 
     return jsonify({
         'type1': type1,
         'mapping_type1': mapping_type1.display_name if mapping_type1 else type1,
         'type2': type2,
         'mapping_type2': mapping_type2.display_name if mapping_type2 else type2,
-        'count': len(results),
+        'count': results_length,
         'average_minutes': round(avg_minutes, 2),
         'min_minutes': round(min_minutes, 2),
         'max_minutes': round(max_minutes, 2)

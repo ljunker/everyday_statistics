@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
 
 from flask import g
 from sqlalchemy import func
@@ -104,3 +104,33 @@ def get_all_stats():
     for t in all_types:
         stats.append(get_event_stats(t))
     return stats
+
+
+def get_stats_t1_to_t2_for_user(type1, type2, user_id):
+    # Get both types for this user, ordered by timestamp
+    events = Event.query.filter(
+        Event.deleted == False,
+        Event.user_id == user_id,
+        Event.type.in_([type1, type2])
+    ).order_by(Event.timestamp).all()
+
+    results = []
+    last_type1 = None
+
+    for event in events:
+        if event.type == type1:
+            last_type1 = event.timestamp
+        elif event.type == type2 and last_type1:
+            delta = event.timestamp - last_type1
+            # Filter out huge or tiny deltas (optional)
+            if timedelta(minutes=1) < delta < timedelta(hours=24):
+                results.append(delta.total_seconds() / 60)
+            last_type1 = None  # reset so only one type1 per type2
+
+    if not results:
+        return 0, -1, -1, -1
+
+    avg_minutes = sum(results) / len(results)
+    min_minutes = min(results)
+    max_minutes = max(results)
+    return len(results), avg_minutes, min_minutes, max_minutes

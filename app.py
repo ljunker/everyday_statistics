@@ -1,15 +1,18 @@
 import secrets
 
-from flask import session, render_template
+from flask import session, render_template, Response
 from flask.cli import with_appcontext
+from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry
+from sqlalchemy import func
 from werkzeug.security import generate_password_hash
 
 from config import app
-from decorators import login_required, admin_required
-from models import (db, User)
+from decorators import login_required, admin_required, prometheus_api_key_required
+from models import (db, User, Event)
 from routes_admin import admin_bp
 from routes_event import events_bp
 from routes_login import login_bp
+from services import get_stats_t1_to_t2_for_user
 
 app.register_blueprint(events_bp)
 app.register_blueprint(admin_bp)
@@ -36,6 +39,33 @@ def mappings_ui():
 def admin():
     api_key = session['api_key']
     return render_template('admin.html', api_key=api_key)
+
+
+EVENTS_TOTAL = Gauge('events_total', 'Total number of events recorded',['type', 'user_id'])
+COFFEE_TO_POOP_AVG = Gauge('coffee_to_poop_avg_minutes', 'Average time from coffee to poop in seconds', ['user_id'])
+@app.route('/metrics')
+@prometheus_api_key_required
+def metrics():
+    registry = CollectorRegistry()
+    users = User.query.all()
+
+    for user in users:
+        type_counts = db.session.query(Event.type, func.count()).filter(
+            Event.deleted == False,
+            Event.user_id == user.id
+        ).group_by(Event.type).all()
+
+        for event_type, count in type_counts:
+            EVENTS_TOTAL.labels(type=event_type, user_id=user.id).set(count)
+
+        _, avg_minutes, _, _ = get_stats_t1_to_t2_for_user('coffee', 'poop', user.id)
+        if avg_minutes is not -1:
+            COFFEE_TO_POOP_AVG.labels(user_id=user.id).set(avg_minutes)
+
+    registry.register(EVENTS_TOTAL)
+    registry.register(COFFEE_TO_POOP_AVG)
+
+    return Response(generate_latest(registry), mimetype=CONTENT_TYPE_LATEST)
 
 
 @app.cli.command('create-admin')
