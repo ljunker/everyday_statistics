@@ -59,7 +59,7 @@ def metrics():
             EVENTS_TOTAL.labels(type=event_type, user_id=user.id).set(count)
 
         _, avg_minutes, _, _ = get_stats_t1_to_t2_for_user('coffee', 'poop', user.id)
-        if avg_minutes is not -1:
+        if avg_minutes != -1:
             COFFEE_TO_POOP_AVG.labels(user_id=user.id).set(avg_minutes)
 
     registry.register(EVENTS_TOTAL)
