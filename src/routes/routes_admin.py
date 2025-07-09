@@ -4,8 +4,9 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 from sqlalchemy import text
 
-from decorators import login_required, admin_required, api_key_required
-from models import Event, TypeMapping, User, db
+from src.db import db
+from src.decorators import admin_required, api_key_required
+from src.models import Event, TypeMapping, User
 
 admin_bp = Blueprint('admin', __name__)
 

@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify, g
 from pytz import UTC
 
-from decorators import api_key_required
-from models import Event, db, TypeMapping
-from services import get_event_stats, get_all_stats, get_stats_t1_to_t2_for_user
+from src.db import db
+from src.decorators import api_key_required
+from src.models import Event, TypeMapping
+from src.services import get_event_stats, get_all_stats, get_stats_t1_to_t2_for_user
 
 events_bp = Blueprint('events', __name__)
 

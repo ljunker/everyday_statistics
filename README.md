@@ -54,7 +54,8 @@ docker compose run web flask shell
 Inside the Flask shell:
 
 ```python
-from app import db
+from src.app import db
+
 db.create_all()
 exit()
 ```

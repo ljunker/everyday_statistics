@@ -3,7 +3,7 @@ from functools import wraps
 
 from flask import request, abort, g, session, redirect, url_for
 
-from models import User
+from src.models import User
 
 
 def api_key_required(f):

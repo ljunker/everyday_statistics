@@ -6,18 +6,13 @@ from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATE
 from sqlalchemy import func
 from werkzeug.security import generate_password_hash
 
-from config import app
-from decorators import login_required, admin_required, prometheus_api_key_required
-from models import (db, User, Event)
-from routes_admin import admin_bp
-from routes_event import events_bp
-from routes_login import login_bp
-from services import get_stats_t1_to_t2_for_user
+from src.config import create_app
+from src.db import db
+from src.decorators import login_required, admin_required, prometheus_api_key_required
+from src.models import User, Event
+from src.services import get_stats_t1_to_t2_for_user
 
-app.register_blueprint(events_bp)
-app.register_blueprint(admin_bp)
-app.register_blueprint(login_bp)
-
+app = create_app()
 
 @app.route('/')
 @login_required

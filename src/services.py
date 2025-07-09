@@ -3,7 +3,8 @@ from datetime import datetime, UTC, timedelta
 from flask import g
 from sqlalchemy import func
 
-from models import Event, db
+from src.db import db
+from src.models import Event
 
 
 def get_all_event_types():

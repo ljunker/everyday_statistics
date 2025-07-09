@@ -1,9 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, UTC
 
-from config import app
-
-db = SQLAlchemy(app)
+from src.db import db
 
 
 class TypeMapping(db.Model):
