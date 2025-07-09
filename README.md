@@ -1,5 +1,14 @@
 # Everyday Statistics Service 🚽📊
 
+⚠️ **WARNING: This project is under active development**
+
+This service is experimental and may change or break at any time.  
+It is **not stable for production use yet** — expect breaking changes, bugs, and incomplete features.
+
+Use it at your own risk and always back up your data!
+
+---
+
 A tiny Flask + PostgreSQL service to track everyday events — like when you poop!  
 Built for fun, stats, and easy expansion. Containerized with Docker Compose.
 
