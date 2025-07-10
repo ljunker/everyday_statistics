@@ -36,9 +36,9 @@ def prometheus_api_key_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not g.current_user:
+        if not session.get('logged_in') and not g.current_user:
             abort(401, description="Authentication required.")
-        if not g.current_user.is_admin:
+        if not session.get('is_admin') and not g.current_user.is_admin:
             abort(403, description="Admin access required.")
         return f(*args, **kwargs)
 
