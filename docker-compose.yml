@@ -29,7 +29,7 @@ services:
     restart: unless-stopped
     environment:
       - SECRET= # here you can add a secret for the auth service
-      - APP_URL=https://auth.njord.ljunker.de
+      - APP_URL= # here you can add the URL of your app
       - USERS= #here you can add users in the format username:password
     ports:
       - "43000:3000"
