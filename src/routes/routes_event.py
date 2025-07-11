@@ -252,6 +252,7 @@ def get_timeline():
             'timestamp': event.timestamp.isoformat(),
             'quality': event.quality,
             'display_name': display_name,
+            'user_id': event.user_id
         })
 
     return jsonify({'timeline': timeline})
