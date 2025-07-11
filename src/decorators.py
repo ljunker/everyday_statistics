@@ -55,6 +55,7 @@ def api_key_required(f):
             'username': matched_user['username'],
             'is_admin': matched_user.get('is_admin', False)
         }
+        logging.basicConfig(level=logging.INFO)
         logging.info(g.current_user)
         return f(*args, **kwargs)
 
