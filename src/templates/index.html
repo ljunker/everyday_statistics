@@ -249,7 +249,7 @@
 <script>
     let chart; // Chart.js instance
     let currentDate = new Date(); // Today's date
-    const username = document.body.dataset.username || 'Guest';
+    const username = document.body.dataset.username;
     document.getElementById('username').innerText = username;
 
     function formatDate(date) {
