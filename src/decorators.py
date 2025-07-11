@@ -1,3 +1,4 @@
+import logging
 import os
 from functools import wraps
 
@@ -48,7 +49,8 @@ def admin_required(f):
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        print("DEBUG: " + request.headers.get('remote-user'))
+        logging.basicConfig(level=logging.INFO)
+        logging.info("REMOTE USER: " + request.headers.get('remote-user', 'Unknown'))
         if not session.get('logged_in'):
             return redirect(url_for('login.login'))
         return f(*args, **kwargs)
