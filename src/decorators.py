@@ -123,6 +123,7 @@ def login_required(f):
             'username': matched_user['username'],
             'is_admin': matched_user.get('is_admin', False)
         }
+        session['username'] = matched_user['firstName']
         return f(*args, **kwargs)
 
     return decorated_function

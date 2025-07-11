@@ -18,7 +18,7 @@ app = create_app()
 @login_required
 def dashboard():
     api_key = session['api_key']
-    username = g.current_user['username']
+    username = session['username']
     return render_template('index.html', api_key=api_key, username=username)
 
 
