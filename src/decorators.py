@@ -116,6 +116,7 @@ def login_required(f):
                 break
         if not matched_user:
             abort(401, description="User not found.")
+        session['api_key'] = None
         for claim in matched_user.get("customClaims", []):
             if claim.get("key") == "api-key":
                 session['api_key'] = claim.get("value")
