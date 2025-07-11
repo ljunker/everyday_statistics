@@ -88,7 +88,11 @@ def admin_required(f):
                 break
         if not matched_user:
             abort(401, description="User not found.")
-        if not matched_user.get('is_admin', False):
+        is_admin = False
+        for group in matched_user.get("userGroups", []):
+            if group.get("name") == "everyday_admin":
+                is_admin = True
+        if not is_admin:
             abort(403, description="Admin access required.")
         return f(*args, **kwargs)
 
