@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, request, jsonify, g
 from pytz import UTC
 
@@ -159,6 +161,7 @@ def stats():
 @events_bp.route('/types', methods=['GET'])
 @api_key_required
 def get_event_types():
+    logging.info(g.current_user)
     types = db.session.query(Event.type).filter_by(deleted=False, user_id=g.current_user.id).distinct().all()
     type_list = [t[0] for t in types]
     return jsonify({

@@ -55,6 +55,7 @@ def api_key_required(f):
             'username': matched_user['username'],
             'is_admin': matched_user.get('is_admin', False)
         }
+        logging.info(g.current_user)
         return f(*args, **kwargs)
 
     return decorated_function
@@ -112,5 +113,10 @@ def login_required(f):
             if claim.get("key") == "api-key":
                 session['api_key'] = claim.get("value")
                 break
+        g.current_user = {
+            'id': matched_user['id'],
+            'username': matched_user['username'],
+            'is_admin': matched_user.get('is_admin', False)
+        }
         return f(*args, **kwargs)
     return decorated_function
