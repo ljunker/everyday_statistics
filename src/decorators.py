@@ -1,9 +1,8 @@
-import logging
 import os
 from functools import wraps
 
 import requests
-from flask import request, abort, g, session, redirect, url_for
+from flask import request, abort, g, session
 
 POCKET_API_KEY = os.environ.get('POCKET_API_KEY', 'default_pocket_api_key')
 POCKET_API_URL_BASE = os.environ.get('POCKET_API_URL_BASE', 'https://pocket.site.de/api/')
@@ -55,8 +54,6 @@ def api_key_required(f):
             'username': matched_user['username'],
             'is_admin': matched_user.get('is_admin', False)
         }
-        logging.basicConfig(level=logging.INFO)
-        logging.info(g.current_user)
         return f(*args, **kwargs)
 
     return decorated_function
@@ -64,6 +61,7 @@ def api_key_required(f):
 
 def prometheus_api_key_required(f):
     prometheus_api_key = os.environ.get('PROMETHEUS_API_KEY')
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get('X-API-KEY')
@@ -96,6 +94,7 @@ def admin_required(f):
 
     return decorated_function
 
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -120,4 +119,5 @@ def login_required(f):
             'is_admin': matched_user.get('is_admin', False)
         }
         return f(*args, **kwargs)
+
     return decorated_function

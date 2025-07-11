@@ -1,5 +1,3 @@
-import logging
-
 from flask import Blueprint, request, jsonify, g
 from pytz import UTC
 
@@ -18,7 +16,8 @@ def create_event():
     event_type = data.get('type', 'unknown')
     timestamp = data.get('timestamp', datetime.now(UTC).isoformat())
     quality = data.get('quality', None)
-    event = Event(type=event_type, timestamp=datetime.fromisoformat(timestamp), user_id=g.current_user['id'], quality=quality)
+    event = Event(type=event_type, timestamp=datetime.fromisoformat(timestamp), user_id=g.current_user['id'],
+                  quality=quality)
     db.session.add(event)
     db.session.commit()
     return jsonify({'message': 'Event recorded!'}), 201
@@ -161,8 +160,6 @@ def stats():
 @events_bp.route('/types', methods=['GET'])
 @api_key_required
 def get_event_types():
-    logging.basicConfig(level=logging.INFO)
-    logging.info(g.current_user)
     types = db.session.query(Event.type).filter_by(deleted=False, user_id=g.current_user['id']).distinct().all()
     type_list = [t[0] for t in types]
     return jsonify({
