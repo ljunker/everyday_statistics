@@ -1,6 +1,6 @@
 import secrets
 
-from flask import session, render_template, Response
+from flask import session, render_template, Response, g
 from flask.cli import with_appcontext
 from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry
 from sqlalchemy import func
@@ -18,7 +18,8 @@ app = create_app()
 @login_required
 def dashboard():
     api_key = session['api_key']
-    return render_template('index.html', api_key=api_key)
+    username = g.current_user['username']
+    return render_template('index.html', api_key=api_key, username=username)
 
 
 @app.route('/mappings-ui')
