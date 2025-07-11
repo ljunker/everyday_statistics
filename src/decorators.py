@@ -48,6 +48,7 @@ def admin_required(f):
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        print("DEBUG: " + request.headers.get('remote-user'))
         if not session.get('logged_in'):
             return redirect(url_for('login.login'))
         return f(*args, **kwargs)
