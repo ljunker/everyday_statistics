@@ -8,8 +8,8 @@ from werkzeug.security import generate_password_hash
 
 from src.config import create_app
 from src.db import db
-from src.decorators import login_required, admin_required, prometheus_api_key_required
-from src.models import User, Event
+from src.decorators import admin_required, prometheus_api_key_required, get_pocket_users, login_required
+from src.models import Event
 from src.services import get_stats_t1_to_t2_for_user
 
 app = create_app()
@@ -29,7 +29,6 @@ def mappings_ui():
 
 
 @app.route('/admin')
-@login_required  # use your session auth
 @admin_required
 def admin():
     api_key = session['api_key']
@@ -42,7 +41,7 @@ COFFEE_TO_POOP_AVG = Gauge('coffee_to_poop_avg_minutes', 'Average time from coff
 @prometheus_api_key_required
 def metrics():
     registry = CollectorRegistry()
-    users = User.query.all()
+    users = get_pocket_users()
 
     for user in users:
         type_counts = db.session.query(Event.type, func.count()).filter(
@@ -61,30 +60,6 @@ def metrics():
     registry.register(COFFEE_TO_POOP_AVG)
 
     return Response(generate_latest(registry), mimetype=CONTENT_TYPE_LATEST)
-
-
-@app.cli.command('create-admin')
-@with_appcontext
-def create_admin():
-    username = input('Admin username: ')
-    password = input('Admin password: ')
-
-    existing_admin = User.query.filter_by(username=username).first()
-    if existing_admin:
-        print(f"User {username} already exists.")
-        return
-
-    api_key = secrets.token_hex(32)
-    user = User(
-        username=username,
-        password_hash=generate_password_hash(password),
-        api_key=api_key,
-        is_admin=True
-    )
-    db.session.add(user)
-    db.session.commit()
-    print(f"✅ Created admin user {username}")
-    print(f"🔑 API key: {api_key}")
 
 
 if __name__ == '__main__':

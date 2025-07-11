@@ -4,7 +4,6 @@ from flask import Flask
 from src.db import db
 from src.routes.routes_admin import admin_bp
 from src.routes.routes_event import events_bp
-from src.routes.routes_login import login_bp
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -22,7 +21,6 @@ def create_app(test_config=None):
     db.init_app(app)
 
     app.register_blueprint(events_bp)
-    app.register_blueprint(login_bp)
     app.register_blueprint(admin_bp)
 
     return app

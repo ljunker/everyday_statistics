@@ -2,19 +2,59 @@ import logging
 import os
 from functools import wraps
 
+import requests
 from flask import request, abort, g, session, redirect, url_for
 
-from src.models import User
+POCKET_API_KEY = os.environ.get('POCKET_API_KEY', 'default_pocket_api_key')
+POCKET_API_URL_BASE = os.environ.get('POCKET_API_URL_BASE', 'https://pocket.site.de/api/')
+
+
+def get_pocket_users():
+    page = 1
+    users = []
+
+    while True:
+        res = requests.get(
+            POCKET_API_URL_BASE + 'users',
+            headers={'X-API-KEY': POCKET_API_KEY, 'Accept': 'application/json'},
+            params={'page': page}
+        )
+        if res.status_code != 200:
+            raise Exception(f"Failed to fetch users: {res.status_code} {res.text}")
+
+        data = res.json()
+        users.extend(data.get('data', []))
+
+        if page >= data['pagination']['totalPages']:
+            break
+        page += 1
+    return users
 
 
 def api_key_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        api_key = request.headers.get('X-API-KEY')
-        user = User.query.filter_by(api_key=api_key).first()
-        if not user:
-            abort(401, description="Invalid or missing API key.")
-        g.current_user = user
+        client_key = request.headers.get('X-API-KEY')
+        if not client_key:
+            abort(401, description="Missing API key.")
+
+        users = get_pocket_users()
+        matched_user = None
+
+        for user in users:
+            for claim in user.get("customClaims", []):
+                if claim.get("key") == "api_key" and claim.get("value") == client_key:
+                    matched_user = user
+                    break
+            if matched_user:
+                break
+        if not matched_user:
+            abort(401, description="Invalid API key.")
+        g.current_user = {
+            'id': matched_user['id'],
+            'username': matched_user['username'],
+            'is_admin': matched_user.get('is_admin', False)
+        }
         return f(*args, **kwargs)
 
     return decorated_function
@@ -37,22 +77,40 @@ def prometheus_api_key_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get('logged_in') and not g.current_user:
-            abort(401, description="Authentication required.")
-        if not session.get('is_admin') and not g.current_user.is_admin:
+        remote_user = request.headers.get('remote_user', None)
+        if not remote_user:
+            abort(401, description="Not logged in.")
+        users = get_pocket_users()
+        matched_user = None
+        for user in users:
+            if user.get('username') == remote_user:
+                matched_user = user
+                break
+        if not matched_user:
+            abort(401, description="User not found.")
+        if not matched_user.get('is_admin', False):
             abort(403, description="Admin access required.")
         return f(*args, **kwargs)
 
     return decorated_function
 
-
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        logging.basicConfig(level=logging.INFO)
-        logging.info("REMOTE USER: " + request.headers.get('remote-user', 'Unknown'))
-        if not session.get('logged_in'):
-            return redirect(url_for('login.login'))
+        remote_user = request.headers.get('remote_user', None)
+        if not remote_user:
+            abort(401, description="Not logged in.")
+        users = get_pocket_users()
+        matched_user = None
+        for user in users:
+            if user.get('username') == remote_user:
+                matched_user = user
+                break
+        if not matched_user:
+            abort(401, description="User not found.")
+        for claim in matched_user.get("customClaims", []):
+            if claim.get("key") == "api_key":
+                session['api_key'] = claim.get("value")
+                break
         return f(*args, **kwargs)
-
     return decorated_function
