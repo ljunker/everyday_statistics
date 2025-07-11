@@ -90,9 +90,9 @@ def admin_required(f):
         if not matched_user:
             abort(401, description="User not found.")
         is_admin = False
+        logging.basicConfig(level=logging.INFO)
+        logging.info(matched_user)
         for group in matched_user.get("userGroups", []):
-            logging.basicConfig(level=logging.INFO)
-            logging.info(group)
             if group.get("name") == "everyday_admin":
                 is_admin = True
         if not is_admin:
