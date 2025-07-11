@@ -43,7 +43,7 @@ def api_key_required(f):
 
         for user in users:
             for claim in user.get("customClaims", []):
-                if claim.get("key") == "api_key" and claim.get("value") == client_key:
+                if claim.get("key") == "api-key" and claim.get("value") == client_key:
                     matched_user = user
                     break
             if matched_user:
@@ -109,7 +109,7 @@ def login_required(f):
         if not matched_user:
             abort(401, description="User not found.")
         for claim in matched_user.get("customClaims", []):
-            if claim.get("key") == "api_key":
+            if claim.get("key") == "api-key":
                 session['api_key'] = claim.get("value")
                 break
         return f(*args, **kwargs)
