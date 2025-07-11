@@ -1,3 +1,4 @@
+import logging
 import os
 from functools import wraps
 
@@ -90,6 +91,8 @@ def admin_required(f):
             abort(401, description="User not found.")
         is_admin = False
         for group in matched_user.get("userGroups", []):
+            logging.basicConfig(level=logging.INFO)
+            logging.info(group)
             if group.get("name") == "everyday_admin":
                 is_admin = True
         if not is_admin:
