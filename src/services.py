@@ -8,11 +8,11 @@ from src.models import Event
 
 
 def get_all_event_types():
-    types = db.session.query(Event.type).filter_by(deleted=False, user_id=g.current_user.id).distinct().order_by(Event.type).all()
+    types = db.session.query(Event.type).filter_by(deleted=False, user_id=g.current_user['id']).distinct().order_by(Event.type).all()
     return [t[0] for t in types]
 
 def get_event_stats(event_type=None):
-    query = Event.query.filter_by(deleted=False, user_id=g.current_user.id)
+    query = Event.query.filter_by(deleted=False, user_id=g.current_user['id'])
     if event_type:
         query = query.filter(Event.type == event_type)
 
@@ -23,7 +23,7 @@ def get_event_stats(event_type=None):
         func.date(Event.timestamp) == today
     ).count()
 
-    first_event = db.session.query(func.min(Event.timestamp)).filter(Event.deleted == False, Event.user_id == g.current_user.id)
+    first_event = db.session.query(func.min(Event.timestamp)).filter(Event.deleted == False, Event.user_id == g.current_user['id'])
     if event_type:
         first_event = first_event.filter(Event.type == event_type)
     first_event = first_event.scalar()
@@ -34,7 +34,7 @@ def get_event_stats(event_type=None):
     else:
         average_per_day = 0
 
-    distinct_dates_query = db.session.query(func.date(Event.timestamp)).filter(Event.deleted == False, Event.user_id == g.current_user.id)
+    distinct_dates_query = db.session.query(func.date(Event.timestamp)).filter(Event.deleted == False, Event.user_id == g.current_user['id'])
     if event_type:
         distinct_dates_query = distinct_dates_query.filter(Event.type == event_type)
     distinct_dates = distinct_dates_query.distinct().all()
@@ -52,7 +52,7 @@ def get_event_stats(event_type=None):
         longest_streak = max(longest_streak, current_streak)
         previous_date = date
 
-    most_active_query = db.session.query(func.date(Event.timestamp), func.count()).filter(Event.deleted == False, Event.user_id == g.current_user.id)
+    most_active_query = db.session.query(func.date(Event.timestamp), func.count()).filter(Event.deleted == False, Event.user_id == g.current_user['id'])
     if event_type:
         most_active_query = most_active_query.filter(Event.type == event_type)
     most_active = (
@@ -74,7 +74,7 @@ def get_event_stats(event_type=None):
             Event.timestamp.op('AT TIME ZONE')('Europe/Berlin')
         ),
         func.count()
-    ).filter(Event.deleted == False, Event.user_id == g.current_user.id)
+    ).filter(Event.deleted == False, Event.user_id == g.current_user['id'])
     if event_type:
         busiest_hour_query = busiest_hour_query.filter(Event.type == event_type)
     busiest_hour = (

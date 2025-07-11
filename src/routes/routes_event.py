@@ -18,7 +18,7 @@ def create_event():
     event_type = data.get('type', 'unknown')
     timestamp = data.get('timestamp', datetime.now(UTC).isoformat())
     quality = data.get('quality', None)
-    event = Event(type=event_type, timestamp=datetime.fromisoformat(timestamp), user_id=g.current_user.id, quality=quality)
+    event = Event(type=event_type, timestamp=datetime.fromisoformat(timestamp), user_id=g.current_user['id'], quality=quality)
     db.session.add(event)
     db.session.commit()
     return jsonify({'message': 'Event recorded!'}), 201
@@ -29,7 +29,7 @@ def create_event():
 def get_events():
     event_type = request.args.get('type')
 
-    query = Event.query.filter_by(deleted=False, user_id=g.current_user.id)
+    query = Event.query.filter_by(deleted=False, user_id=g.current_user['id'])
     if event_type:
         query = query.filter(Event.type == event_type)
 
@@ -55,7 +55,7 @@ def soft_delete_events_by_type():
     if not event_type:
         return jsonify({'error': 'Missing type parameter'}), 400
 
-    updated_count = Event.query.filter_by(type=event_type, deleted=False, user_id=g.current_user.id) \
+    updated_count = Event.query.filter_by(type=event_type, deleted=False, user_id=g.current_user['id']) \
         .update({'deleted': True})
     db.session.commit()
 
@@ -90,7 +90,7 @@ def delete_event(event_id):
 @events_bp.route('/events/deleted', methods=['GET'])
 @api_key_required
 def get_deleted_events():
-    deleted_events = Event.query.filter_by(deleted=True, user_id=g.current_user.id).all()
+    deleted_events = Event.query.filter_by(deleted=True, user_id=g.current_user['id']).all()
 
     results = []
     for event in deleted_events:
@@ -163,7 +163,7 @@ def stats():
 def get_event_types():
     logging.basicConfig(level=logging.INFO)
     logging.info(g.current_user)
-    types = db.session.query(Event.type).filter_by(deleted=False, user_id=g.current_user.id).distinct().all()
+    types = db.session.query(Event.type).filter_by(deleted=False, user_id=g.current_user['id']).distinct().all()
     type_list = [t[0] for t in types]
     return jsonify({
         'event_types': type_list
@@ -223,7 +223,7 @@ def get_timeline():
     event_type = request.args.get('type')  # optional
     date_str = request.args.get('date')  # optional
 
-    query = Event.query.filter_by(deleted=False, user_id=g.current_user.id)
+    query = Event.query.filter_by(deleted=False, user_id=g.current_user['id'])
     if event_type:
         query = query.filter(Event.type == event_type)
 
@@ -263,7 +263,7 @@ def get_timeline():
 @events_bp.route('/stats/<type1>_to_<type2>', methods=['GET'])
 @api_key_required
 def generic_time_gap(type1, type2):
-    user_id = g.current_user.id
+    user_id = g.current_user['id']
 
     mapping_type1 = TypeMapping.query.filter_by(type=type1).first()
     mapping_type2 = TypeMapping.query.filter_by(type=type2).first()
