@@ -4,6 +4,6 @@ signleton = None
 
 def get_scheduler() -> APScheduler:
     global signleton
-    if signleton in None:
+    if signleton is None:
         signleton = APScheduler()
     return signleton
