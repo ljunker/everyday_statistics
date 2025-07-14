@@ -14,6 +14,8 @@ def create_app(test_config=None):
 
     # ✅ Load default config from environment
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    if test_config is not None and test_config['SQLALCHEMY_DATABASE_URI'] is not None:
+        app.config['SQLALCHEMY_DATABASE_URI'] = test_config['SQLALCHEMY_DATABASE_URI']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.secret_key = os.getenv('FLASK_SECRET_KEY', 'supersecretkey')
 
@@ -21,9 +23,9 @@ def create_app(test_config=None):
 
     # ✅ Initialize the scheduler
     scheduler = get_scheduler()
-    if test_config is not None:
+    if test_config and not test_config.get('TESTING', True):
         scheduler.init_app(app)
-    scheduler.start()
+        scheduler.start()
 
     # ✅ Allow test overrides
     if test_config:
