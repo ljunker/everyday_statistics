@@ -1,18 +1,22 @@
-import secrets
-
-from flask import session, render_template, Response, g
-from flask.cli import with_appcontext
-from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry
+from flask import session, render_template, Response
+from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry
 from sqlalchemy import func
-from werkzeug.security import generate_password_hash
 
-from src.config import create_app
+from src.cache import get_users_from_cache
+from src.config import create_app, scheduler
 from src.db import db
-from src.decorators import admin_required, prometheus_api_key_required, get_pocket_users, login_required
+from src.decorators import admin_required, prometheus_api_key_required, login_required
 from src.models import Event
 from src.services import get_stats_t1_to_t2_for_user
 
 app = create_app()
+
+
+@scheduler.task('interval', id='update_users_cache', seconds=900, misfire_grace_time=30)
+def update_users_cache():
+    """Update the users cache every 15 minutes."""
+    update_users_cache()
+
 
 @app.route('/')
 @login_required
@@ -36,13 +40,15 @@ def admin():
     return render_template('admin.html', api_key=api_key)
 
 
-EVENTS_TOTAL = Gauge('events_total', 'Total number of events recorded',['type', 'user_id'])
+EVENTS_TOTAL = Gauge('events_total', 'Total number of events recorded', ['type', 'user_id'])
 COFFEE_TO_POOP_AVG = Gauge('coffee_to_poop_avg_minutes', 'Average time from coffee to poop in seconds', ['user_id'])
+
+
 @app.route('/metrics')
 @prometheus_api_key_required
 def metrics():
     registry = CollectorRegistry()
-    users = get_pocket_users()
+    users = get_users_from_cache()
 
     for user in users:
         type_counts = db.session.query(Event.type, func.count()).filter(

@@ -4,30 +4,7 @@ from functools import wraps
 import requests
 from flask import request, abort, g, session
 
-POCKET_API_KEY = os.environ.get('POCKET_API_KEY', 'default_pocket_api_key')
-POCKET_API_URL_BASE = os.environ.get('POCKET_API_URL_BASE', 'https://pocket.site.de/api/')
-
-
-def get_pocket_users():
-    page = 1
-    users = []
-
-    while True:
-        res = requests.get(
-            POCKET_API_URL_BASE + 'users',
-            headers={'X-API-KEY': POCKET_API_KEY, 'Accept': 'application/json'},
-            params={'page': page}
-        )
-        if res.status_code != 200:
-            raise Exception(f"Failed to fetch users: {res.status_code} {res.text}")
-
-        data = res.json()
-        users.extend(data.get('data', []))
-
-        if page >= data['pagination']['totalPages']:
-            break
-        page += 1
-    return users
+from src.cache import get_users_from_cache
 
 
 def api_key_required(f):
@@ -37,7 +14,7 @@ def api_key_required(f):
         if not client_key:
             abort(401, description="Missing API key.")
 
-        users = get_pocket_users()
+        users = get_users_from_cache()
         matched_user = None
 
         for user in users:
@@ -80,7 +57,7 @@ def admin_required(f):
         remote_user = request.headers.get('remote_user', None)
         if not remote_user:
             abort(401, description="Not logged in.")
-        users = get_pocket_users()
+        users = get_users_from_cache()
         matched_user = None
         for user in users:
             if user.get('username') == remote_user:
@@ -105,7 +82,7 @@ def login_required(f):
         remote_user = request.headers.get('remote_user', None)
         if not remote_user:
             abort(401, description="Not logged in.")
-        users = get_pocket_users()
+        users = get_users_from_cache()
         matched_user = None
         for user in users:
             if user.get('username') == remote_user:

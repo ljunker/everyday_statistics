@@ -7,3 +7,4 @@ SQLAlchemy~=2.0.41
 pytz~=2025.2
 prometheus-client~=0.22.1
 requests~=2.32.4
+Flask-APScheduler~=1.13.1
