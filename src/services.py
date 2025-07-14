@@ -68,17 +68,22 @@ def get_event_stats(event_type=None):
         most_active_day = None
         most_active_count = 0
 
-    busiest_hour_query = db.session.query(
-        func.extract(
-            'hour',
-            Event.timestamp.op('AT TIME ZONE')('Europe/Berlin')
-        ),
-        func.count()
-    ).filter(Event.deleted == False, Event.user_id == g.current_user['id'])
+    hour_func = func.extract('hour', Event.timestamp)
+
+    busiest_hour_query = (
+        db.session.query(
+            hour_func,
+            func.count()
+        )
+        .filter(Event.deleted == False, Event.user_id == g.current_user['id'])
+    )
+
     if event_type:
         busiest_hour_query = busiest_hour_query.filter(Event.type == event_type)
+
     busiest_hour = (
-        busiest_hour_query.group_by(func.extract('hour', Event.timestamp.op('AT TIME ZONE')('Europe/Berlin')))
+        busiest_hour_query
+        .group_by(hour_func)
         .order_by(func.count().desc())
         .first()
     )

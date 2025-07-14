@@ -15,8 +15,9 @@ def create_event():
     data = request.get_json()
     event_type = data.get('type', 'unknown')
     timestamp = data.get('timestamp', datetime.now(UTC).isoformat())
+    time = datetime.fromisoformat(timestamp).astimezone(UTC)
     quality = data.get('quality', None)
-    event = Event(type=event_type, timestamp=datetime.fromisoformat(timestamp), user_id=g.current_user['id'],
+    event = Event(type=event_type, timestamp=time, user_id=g.current_user['id'],
                   quality=quality)
     db.session.add(event)
     db.session.commit()

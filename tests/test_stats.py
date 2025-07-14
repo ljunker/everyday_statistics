@@ -3,24 +3,29 @@ from datetime import datetime
 from pytz import UTC
 
 from src.db import db
-from src.models import User, Event
+from src.models import Event
 
 
-def test_stats(client):
+def test_stats(client, mocker):
     api_key = 'test_api_key'
+    user_id = '281a1c09-aec7-4139-b6ad-e9a7aea7ea4c'
 
-    # insert test user with the api_key
-    user = User(
-        username="tester",
-        password_hash="1234",
-        api_key=api_key,
-        is_admin=False
-    )
-
-    db.session.add(user)
-    db.session.commit()
-
-    user_id = User.query.first().id
+    func_mock = mocker.patch('src.cache.get_pocket_users')
+    func_mock.return_value = [
+        {
+            "id": user_id,
+            "username": "test",
+            "email": "test@test.de",
+            "firstName": "Test",
+            "lastName": "Tester",
+            "isAdmin": False,
+            "locale": None,
+            "customClaims": [{"key": "api-key", "value": api_key}],
+            "userGroups": [],
+            "ldapId": None,
+            "disabled": False
+        }
+    ]
 
     event = Event(type='test_event', timestamp=datetime.fromisoformat(datetime.now(UTC).isoformat()), user_id=user_id, quality=None)
 
@@ -34,4 +39,4 @@ def test_stats(client):
 
     assert response.status_code == 200
     data = response.get_json()
-    assert 'total_count' in data
+    assert 'total_count' in data[0]

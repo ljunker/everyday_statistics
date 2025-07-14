@@ -3,7 +3,7 @@ import os
 from flask import Flask
 
 from src.db import db
-from src.logger import get_logger, init_logger
+from src.logger import init_logger
 from src.routes.routes_admin import admin_bp
 from src.routes.routes_event import events_bp
 from src.scheduler import get_scheduler
@@ -21,7 +21,8 @@ def create_app(test_config=None):
 
     # ✅ Initialize the scheduler
     scheduler = get_scheduler()
-    scheduler.init_app(app)
+    if test_config is not None:
+        scheduler.init_app(app)
     scheduler.start()
 
     # ✅ Allow test overrides
