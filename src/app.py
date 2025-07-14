@@ -2,20 +2,14 @@ from flask import session, render_template, Response
 from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry
 from sqlalchemy import func
 
-from src.cache import get_users_from_cache, update_user_cache
-from src.config import create_app, scheduler
+from src.cache import get_users_from_cache
+from src.config import create_app
 from src.db import db
 from src.decorators import admin_required, prometheus_api_key_required, login_required
 from src.models import Event
 from src.services import get_stats_t1_to_t2_for_user
 
 app = create_app()
-
-
-@scheduler.task('interval', id='update_users_cache', seconds=900, misfire_grace_time=30)
-def update_users_cache_job():
-    """Update the users cache every 15 minutes."""
-    update_user_cache()
 
 
 @app.route('/')

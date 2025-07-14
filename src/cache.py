@@ -2,7 +2,7 @@ import os
 
 import requests
 
-from src.config import logger
+from src.config import logger, scheduler
 
 user_cache = []
 
@@ -35,6 +35,11 @@ def get_pocket_users():
 def update_user_cache():
     global user_cache
     user_cache = get_pocket_users()
+
+@scheduler.task('interval', id='update_users_cache', seconds=900, misfire_grace_time=30)
+def update_users_cache_job():
+    """Update the users cache every 15 minutes."""
+    update_user_cache()
 
 def get_users_from_cache():
     global user_cache
