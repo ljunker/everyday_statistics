@@ -2,21 +2,7 @@ from logging import Logger
 
 singleton = None
 
-def get_logger() -> Logger:
-    global singleton
-    if singleton is None:
-        singleton = Logger()
-    return singleton
-
-def init_logger(logger: Logger):
-    """Initialize the logger with a specific logger instance."""
-    global singleton
-    if singleton is None:
-        singleton = Logger()
-    singleton.set_logger(logger)
-    return singleton
-
-class Logger():
+class LoggerWrapper():
     logger: Logger = None
 
     def __init__(self):
@@ -49,3 +35,18 @@ class Logger():
             self.logger.warning(message)
         else:
             print(f"WARNING: {message}")
+
+
+def get_logger() -> LoggerWrapper:
+    global singleton
+    if singleton is None:
+        singleton = LoggerWrapper()
+    return singleton
+
+def init_logger(logger: Logger):
+    """Initialize the logger with a specific logger instance."""
+    global singleton
+    if singleton is None:
+        singleton = LoggerWrapper()
+    singleton.set_logger(logger)
+    return singleton
