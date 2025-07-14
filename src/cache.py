@@ -37,5 +37,7 @@ def update_user_cache():
 def get_users_from_cache():
     global user_cache
     if user_cache is None or len(user_cache) == 0:
+        print("User cache is empty or not initialized, updating...")
         update_user_cache()
+    print(f"Returning {len(user_cache)} users from cache")
     return user_cache
