@@ -2,6 +2,8 @@ import os
 
 import requests
 
+from src.config import logger
+
 user_cache = []
 
 POCKET_API_KEY = os.environ.get('POCKET_API_KEY', 'default_pocket_api_key')
@@ -37,7 +39,7 @@ def update_user_cache():
 def get_users_from_cache():
     global user_cache
     if user_cache is None or len(user_cache) == 0:
-        print("User cache is empty or not initialized, updating...")
+        logger.info("User cache is empty or not initialized, updating...")
         update_user_cache()
-    print(f"Returning {len(user_cache)} users from cache")
+    logger.info(f"Returning {len(user_cache)} users from cache")
     return user_cache

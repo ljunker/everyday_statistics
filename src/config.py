@@ -1,4 +1,6 @@
 import os
+from logging import Logger
+
 from flask import Flask
 from flask_apscheduler import APScheduler
 
@@ -7,6 +9,7 @@ from src.routes.routes_admin import admin_bp
 from src.routes.routes_event import events_bp
 
 scheduler = APScheduler()
+logger: Logger = None
 
 def create_app(test_config=None):
     app = Flask(__name__)
@@ -30,5 +33,7 @@ def create_app(test_config=None):
 
     app.register_blueprint(events_bp)
     app.register_blueprint(admin_bp)
+
+    logger = app.logger
 
     return app
