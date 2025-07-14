@@ -1,19 +1,5 @@
-from src.models import db, User
-
-
 def test_create_event(client):
     api_key = 'test_api_key'
-
-    # insert test user with the api_key
-    user = User(
-        username="tester",
-        password_hash="1234",
-        api_key=api_key,
-        is_admin=False
-    )
-
-    db.session.add(user)
-    db.session.commit()
 
     response = client.post(
         '/events',
