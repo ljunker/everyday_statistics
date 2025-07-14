@@ -322,10 +322,10 @@
       for (const [date, events] of Object.entries(data.timeline)) {
         events.forEach(e => {
           const utcDate = new Date(e.timestamp + "+00:00");
-          const localTime = new Intl.toLocaleTimeString(["de-DE"], {
+          const localTime = utcDate.toLocaleTimeString(["de-DE"], {
             hour: '2-digit',
             minute: '2-digit'
-          }).format(utcDate);
+          });
           timelineContent += `
               <div class="timeline-hour">${localTime}</div>
               <div
