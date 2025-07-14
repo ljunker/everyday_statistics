@@ -322,7 +322,7 @@
       for (const [date, events] of Object.entries(data.timeline)) {
         events.forEach(e => {
           const utcDate = new Date(e.timestamp);
-          const localTime = utcDate.toLocaleTimeString([], {
+          const localTime = utcDate.toLocaleTimeString(["de-DE"], {
             hour: '2-digit',
             minute: '2-digit'
           });
