@@ -2,9 +2,12 @@ import os
 
 import requests
 
-from src.config import logger, scheduler
+from src.logger import get_logger
+from src.scheduler import get_scheduler
 
 user_cache = []
+
+scheduler = get_scheduler()
 
 POCKET_API_KEY = os.environ.get('POCKET_API_KEY', 'default_pocket_api_key')
 POCKET_API_URL_BASE = os.environ.get('POCKET_API_URL_BASE', 'https://pocket.site.de/api/')
@@ -43,6 +46,7 @@ def update_users_cache_job():
 
 def get_users_from_cache():
     global user_cache
+    logger = get_logger()
     if user_cache is None or len(user_cache) == 0:
         logger.info("User cache is empty or not initialized, updating...")
         update_user_cache()

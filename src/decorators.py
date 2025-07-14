@@ -1,7 +1,6 @@
 import os
 from functools import wraps
 
-import requests
 from flask import request, abort, g, session
 
 from src.cache import get_users_from_cache
