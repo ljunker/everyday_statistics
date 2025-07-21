@@ -20,7 +20,7 @@ def dashboard():
     return render_template('index.html', api_key=api_key, username=username)
 
 
-@app.route('/mappings-ui')
+@app.route('/mapping')
 @login_required
 def mappings_ui():
     api_key = session['api_key']
