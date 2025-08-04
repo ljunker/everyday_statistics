@@ -1,0 +1,18 @@
+apiVersion: v1
+data:
+  API_KEY: 13c8bf533f2c3a90ee1233d37a481df95f16da33e9cb4bcef5e59fc0bf59d8fa
+  DATABASE_URL: postgresql://lars:test@db:5432/stats_db
+  FLASK_SECRET_KEY: 4226f57610eb6497e3c8f3d46b86c86e7169a2c107f200cff4fa1f0ac1e7df99
+  LOGIN_PASS: LLrs1Lj5n:everyday
+  LOGIN_USER: lars
+  POCKET_API_KEY: zlbB2tOFJkusK1CQYaqERKpjBNZHuFti
+  POCKET_API_URL_BASE: https://pocket.njord.ljunker.de/api/
+  POSTGRES_DB: stats_db
+  POSTGRES_PASSWORD: test
+  POSTGRES_USER: lars
+  PROMETHEUS_API_KEY: cda4c17e92b7aad8b67f2ef4f1fdca0b6fd07adcb9d49ef3a7f0bc685b53010b
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: db-dbconn-env
+  name: dbconn-env
