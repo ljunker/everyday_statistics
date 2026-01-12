@@ -6,7 +6,7 @@ Thanks for your interest in contributing!
 
 ## What this project does
 
-This is a simple, self-hosted service for tracking everyday events (like pooping, coffee, walks) using Flask, Postgres, and Docker Compose.  
+This is a simple, self-hosted service for tracking everyday events (like pooping, coffee, walks) using Flask, SQLite, and Docker Compose.  
 It has API key authentication, a web dashboard, backups, user management, and more.
 
 ---

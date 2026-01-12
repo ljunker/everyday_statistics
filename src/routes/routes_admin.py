@@ -87,13 +87,6 @@ def import_db():
     db.session.bulk_save_objects(events)
     db.session.commit()
 
-    if db.engine.name == 'postgresql':
-        db.session.execute(text("""
-          SELECT setval('events_id_seq', (SELECT COALESCE(MAX(id), 1) FROM events));
-          SELECT setval('type_mappings_id_seq', (SELECT COALESCE(MAX(id), 1) FROM type_mappings));
-        """))
-        db.session.commit()
-
     return jsonify({'message': 'Database imported successfully'})
 
 
