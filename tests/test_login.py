@@ -54,3 +54,39 @@ def test_api_fails_without_header(client, monkeypatch):
     
     response = client.get('/events')
     assert response.status_code == 401
+
+def test_prometheus_api_key_required(client, monkeypatch):
+    monkeypatch.setenv('PROMETHEUS_API_KEY', 'prom_key')
+
+    # Fail without header
+    response = client.get('/metrics')
+    assert response.status_code == 401
+
+    # Fail with wrong key
+    response = client.get('/metrics', headers={'X-API-KEY': 'wrong'})
+    assert response.status_code == 401
+
+    # Success with correct key
+    response = client.get('/metrics', headers={'X-API-KEY': 'prom_key'})
+    assert response.status_code == 200
+
+def test_ui_routes(client, monkeypatch):
+    monkeypatch.setenv('APP_API_KEY', 'secret')
+
+    # Login first
+    client.post('/login', data={'api_key': 'secret'})
+
+    # Test dashboard
+    response = client.get('/')
+    assert response.status_code == 200
+    assert b"Dashboard" in response.data
+
+    # Test mappings UI
+    response = client.get('/mapping')
+    assert response.status_code == 200
+    assert b"Type Mappings" in response.data
+
+    # Test admin UI
+    response = client.get('/admin')
+    assert response.status_code == 200
+    assert b"Admin Panel" in response.data

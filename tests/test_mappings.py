@@ -67,3 +67,15 @@ def test_delete_mapping(client, monkeypatch):
 
     response = client.get('/mappings', headers={'X-API-KEY': api_key})
     assert response.get_json() == []
+
+def test_mapping_errors(client, monkeypatch):
+    api_key = 'secret'
+    monkeypatch.setenv('APP_API_KEY', api_key)
+
+    # Update mapping - not found
+    response = client.put('/mappings/9999', json={'display_name': 'New'}, headers={'X-API-KEY': api_key})
+    assert response.status_code == 404
+
+    # Delete mapping - not found
+    response = client.delete('/mappings/9999', headers={'X-API-KEY': api_key})
+    assert response.status_code == 404

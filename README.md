@@ -1,5 +1,7 @@
 # Everyday Statistics Service 🚽📊
 
+![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)
+
 A tiny Flask + SQLite service to track everyday events — like when you poop!  
 Built for fun, stats, and easy expansion. Containerized with Docker Compose.
 
@@ -99,6 +101,23 @@ curl http://localhost:5000/stats   -H "X-API-KEY: supersecretkey"
 
 ```bash
 docker compose up --build --force-recreate --remove-orphans
+```
+
+---
+
+## 🧪 Testing
+
+To run the tests and see the coverage report:
+
+```bash
+./run_tests.sh
+```
+
+Or manually:
+
+```bash
+pip install -r requirements-dev.txt
+python3 -m pytest --cov=src --cov-report=term-missing
 ```
 
 ---

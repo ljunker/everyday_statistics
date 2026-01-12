@@ -23,10 +23,9 @@ def api_key_required(f):
 
 
 def prometheus_api_key_required(f):
-    prometheus_api_key = os.environ.get('PROMETHEUS_API_KEY')
-
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        prometheus_api_key = os.environ.get('PROMETHEUS_API_KEY')
         api_key = request.headers.get('X-API-KEY')
         if not api_key or api_key != prometheus_api_key:
             abort(401, description="Invalid or missing special API key.")

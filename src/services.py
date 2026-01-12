@@ -38,7 +38,13 @@ def get_event_stats(event_type=None):
     if event_type:
         distinct_dates_query = distinct_dates_query.filter(Event.type == event_type)
     distinct_dates = distinct_dates_query.distinct().all()
-    dates = sorted([d[0] for d in distinct_dates])
+    dates = []
+    for d in distinct_dates:
+        date_val = d[0]
+        if isinstance(date_val, str):
+            date_val = datetime.strptime(date_val, '%Y-%m-%d').date()
+        dates.append(date_val)
+    dates.sort()
 
     longest_streak = 0
     current_streak = 0

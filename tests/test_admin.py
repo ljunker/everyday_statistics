@@ -59,3 +59,10 @@ def test_import_db(client, monkeypatch):
     data = response.get_json()
     assert len(data) == 1
     assert data[0]['type'] == 'imported_event'
+
+def test_admin_import_invalid(client, monkeypatch):
+    api_key = 'secret'
+    monkeypatch.setenv('APP_API_KEY', api_key)
+    # Use Content-Type: application/json but empty body to trigger 400 in our code
+    response = client.post('/backup/import', data='null', content_type='application/json', headers={'X-API-KEY': api_key})
+    assert response.status_code == 400

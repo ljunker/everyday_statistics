@@ -83,3 +83,49 @@ def test_get_timeline(client, monkeypatch):
     assert date_str in data['timeline']
     assert len(data['timeline'][date_str]) == 1
     assert data['timeline'][date_str][0]['type'] == 'coffee'
+
+def test_event_errors(client, monkeypatch):
+    api_key = 'secret'
+    monkeypatch.setenv('APP_API_KEY', api_key)
+
+    # 1. Soft delete by type - missing type parameter
+    response = client.delete('/events', headers={'X-API-KEY': api_key})
+    assert response.status_code == 400
+    assert b"Missing type parameter" in response.data
+
+    # 2. Delete single event - not found
+    response = client.delete('/events/9999', headers={'X-API-KEY': api_key})
+    assert response.status_code == 404
+
+    # 3. Delete single event - already deleted
+    client.post('/events', json={'type': 'test'}, headers={'X-API-KEY': api_key})
+    event_id = client.get('/events', headers={'X-API-KEY': api_key}).get_json()['events'][0]['id']
+    client.delete(f'/events/{event_id}', headers={'X-API-KEY': api_key})
+    response = client.delete(f'/events/{event_id}', headers={'X-API-KEY': api_key})
+    assert response.status_code == 400
+    assert b"already deleted" in response.data
+
+    # 4. Restore event - not found
+    response = client.post('/events/restore/9999', headers={'X-API-KEY': api_key})
+    assert response.status_code == 404
+
+    # 5. Restore event - already active
+    client.post('/events', json={'type': 'active'}, headers={'X-API-KEY': api_key})
+    events = client.get('/events', headers={'X-API-KEY': api_key}).get_json()['events']
+    active_id = next(e['id'] for e in events if e['type'] == 'active')
+    response = client.post(f'/events/restore/{active_id}', headers={'X-API-KEY': api_key})
+    assert response.status_code == 400
+    assert b"already active" in response.data
+
+    # 6. Update event - invalid timestamp
+    response = client.put(f'/events/{active_id}', json={'timestamp': 'invalid'}, headers={'X-API-KEY': api_key})
+    assert response.status_code == 400
+    assert b"Invalid timestamp format" in response.data
+
+    # 7. Update event - not found
+    response = client.put('/events/9999', json={'type': 'new'}, headers={'X-API-KEY': api_key})
+    assert response.status_code == 404
+
+    # 8. Timeline - invalid date
+    response = client.get('/timeline?date=not-a-date', headers={'X-API-KEY': api_key})
+    assert response.status_code == 400
