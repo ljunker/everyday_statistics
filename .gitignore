@@ -4,3 +4,6 @@ dbconn.env
 **/__pycache__/
 
 instance
+.coverage
+.output.txt
+:memory:

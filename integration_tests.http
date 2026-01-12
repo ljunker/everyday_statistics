@@ -1,0 +1,47 @@
+### Integration Test Requests
+
+@host = http://localhost:5000
+@api_key = secret
+
+### Create a 'coffee' event
+POST {{host}}/events
+Content-Type: application/json
+X-API-KEY: {{api_key}}
+
+{
+  "type": "coffee",
+  "quality": 8
+}
+
+### Create a 'work' event with a specific timestamp (UTC)
+POST {{host}}/events
+Content-Type: application/json
+X-API-KEY: {{api_key}}
+
+{
+  "type": "work",
+  "timestamp": "2026-01-12T09:00:00Z",
+  "quality": 5
+}
+
+### Create a 'poop' event
+POST {{host}}/events
+Content-Type: application/json
+X-API-KEY: {{api_key}}
+
+{
+  "type": "poop"
+}
+
+### Get timeline for today
+# Replace the date with today's date if needed
+GET {{host}}/timeline?date=2026-01-12
+X-API-KEY: {{api_key}}
+
+### Get all events of type 'coffee'
+GET {{host}}/events?type=coffee
+X-API-KEY: {{api_key}}
+
+### Get stats for all events
+GET {{host}}/stats
+X-API-KEY: {{api_key}}
