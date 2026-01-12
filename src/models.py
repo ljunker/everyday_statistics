@@ -16,5 +16,5 @@ class Event(db.Model):
     type = db.Column(db.String(50), nullable=False, index=True)
     timestamp = db.Column(db.DateTime(), default=datetime.now(UTC), index=True)
     deleted = db.Column(db.Boolean, default=False, nullable=False, index=True)
-    user_id = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(db.String(50), nullable=False, default='default_user')
     quality = db.Column(db.Integer, nullable=True, index=True)

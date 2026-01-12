@@ -6,28 +6,11 @@ from src.db import db
 from src.models import Event
 
 
-def test_stats(client, mocker):
+def test_stats(client, monkeypatch):
     api_key = 'test_api_key'
-    user_id = '281a1c09-aec7-4139-b6ad-e9a7aea7ea4c'
+    monkeypatch.setenv('APP_API_KEY', api_key)
 
-    func_mock = mocker.patch('src.cache.get_pocket_users')
-    func_mock.return_value = [
-        {
-            "id": user_id,
-            "username": "test",
-            "email": "test@test.de",
-            "firstName": "Test",
-            "lastName": "Tester",
-            "isAdmin": False,
-            "locale": None,
-            "customClaims": [{"key": "api-key", "value": api_key}],
-            "userGroups": [],
-            "ldapId": None,
-            "disabled": False
-        }
-    ]
-
-    event = Event(type='test_event', timestamp=datetime.fromisoformat(datetime.now(UTC).isoformat()), user_id=user_id, quality=None)
+    event = Event(type='test_event', timestamp=datetime.fromisoformat(datetime.now(UTC).isoformat()), quality=None)
 
     db.session.add(event)
     db.session.commit()

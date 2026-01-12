@@ -53,13 +53,13 @@
     </style>
 </head>
 
-<body data-api-key="{{ api_key }}" data-username="{{ username }}">
+<body data-api-key="{{ api_key }}">
 
 <div class="container py-5">
-    <h1 class="mb-4">Everyday Statistics Dashboard - <span id="username"></span></h1>
-    <a href="/logout" class="btn btn-outline-danger mb-4">Logout</a>
-    <a href="/mapping" class="btn btn-secondary mb-4">Mappings</a>
-    <a href="/admin" class="btn btn-secondary mb-4">Admin</a>
+    <h1 class="mb-4">Everyday Statistics Dashboard</h1>
+    <a href="{{ url_for('main.mappings_ui') }}" class="btn btn-secondary mb-4">Mappings</a>
+    <a href="{{ url_for('main.admin') }}" class="btn btn-secondary mb-4">Admin</a>
+    <a href="{{ url_for('main.logout') }}" class="btn btn-danger mb-4">Logout</a>
 
     <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addEventModal">
         ➕ Add New Event
@@ -249,8 +249,6 @@
 <script>
     let chart; // Chart.js instance
     let currentDate = new Date(); // Today's date
-    const username = document.body.dataset.username;
-    document.getElementById('username').innerText = username;
 
     function formatDate(date) {
       return date.toISOString().split('T')[0];

@@ -1,6 +1,6 @@
 # Everyday Statistics Service 🚽📊
 
-A tiny Flask + PostgreSQL service to track everyday events — like when you poop!  
+A tiny Flask + SQLite service to track everyday events — like when you poop!  
 Built for fun, stats, and easy expansion. Containerized with Docker Compose.
 
 ---
@@ -33,13 +33,13 @@ Copy the `dbconn.env.example` to `dbconn.env`:
 cp dbconn.env.example dbconn.env
 ```
 Configure the postgres user, password and db to anything you like (but make it secure ffs...).
-The `DATABASE_URL` `PROMETHEUS_SECRET_KEY` and `FLASK_SECRET_KEY` are for the flask server. Generate a good secret key with:
+The `DATABASE_URL`, `PROMETHEUS_API_KEY`, `APP_API_KEY` and `FLASK_SECRET_KEY` are for the flask server. Generate a good secret key with:
 
 ```bash
 openssl rand -hex 32
 ```
 
-Then copy the generated key into your `.env` file as `FLASK_SECRET_KEY`.
+Then copy the generated key into your `.env` file as `FLASK_SECRET_KEY` and `APP_API_KEY`.
 
 ---
 
@@ -48,25 +48,8 @@ Then copy the generated key into your `.env` file as `FLASK_SECRET_KEY`.
 Before first run, create the tables:
 
 ```bash
-docker compose run web flask shell
+./upgrade.sh
 ```
-
-Inside the Flask shell:
-
-```python
-from src.app import db
-
-db.create_all()
-exit()
-```
-
-Then create an admin user with
-
-```bash
-docker compose run web flask create-admin
-```
-
-You can create additional users later via the web app.
 
 ### 4️⃣ Build & start services
 
@@ -79,8 +62,7 @@ docker compose up --build
 Add `-d` to run in detached mode (background).
 
 This starts:
-- `db` → PostgreSQL database
-- `web` → Flask app
+- `web` → Flask app with SQLite database
 
 ---
 

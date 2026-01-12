@@ -5,8 +5,6 @@ data:
   FLASK_SECRET_KEY: 4226f57610eb6497e3c8f3d46b86c86e7169a2c107f200cff4fa1f0ac1e7df99
   LOGIN_PASS: LLrs1Lj5n:everyday
   LOGIN_USER: lars
-  POCKET_API_KEY: zlbB2tOFJkusK1CQYaqERKpjBNZHuFti
-  POCKET_API_URL_BASE: https://pocket.njord.ljunker.de/api/
   POSTGRES_DB: stats_db
   POSTGRES_PASSWORD: test
   POSTGRES_USER: lars

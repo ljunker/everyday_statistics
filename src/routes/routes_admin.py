@@ -24,7 +24,6 @@ def export_db():
             'type': e.type,
             'timestamp': e.timestamp.isoformat(),
             'deleted': e.deleted,
-            'user_id': e.user_id,
             'quality': e.quality
         }
         for e in events
@@ -82,18 +81,18 @@ def import_db():
             type=e['type'],
             timestamp=ts,
             deleted=e.get('deleted', False),
-            user_id=e['user_id'],
             quality=e.get('quality', None),
         ))
 
     db.session.bulk_save_objects(events)
     db.session.commit()
 
-    db.session.execute(text("""
-      SELECT setval('events_id_seq', (SELECT COALESCE(MAX(id), 1) FROM events));
-      SELECT setval('type_mappings_id_seq', (SELECT COALESCE(MAX(id), 1) FROM type_mappings));
-    """))
-    db.session.commit()
+    if db.engine.name == 'postgresql':
+        db.session.execute(text("""
+          SELECT setval('events_id_seq', (SELECT COALESCE(MAX(id), 1) FROM events));
+          SELECT setval('type_mappings_id_seq', (SELECT COALESCE(MAX(id), 1) FROM type_mappings));
+        """))
+        db.session.commit()
 
     return jsonify({'message': 'Database imported successfully'})
 

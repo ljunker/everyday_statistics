@@ -334,8 +334,6 @@ data:
     LOGIN_PASS=LLrs1Lj5n:everyday
     FLASK_SECRET_KEY=4226f57610eb6497e3c8f3d46b86c86e7169a2c107f200cff4fa1f0ac1e7df99
     PROMETHEUS_API_KEY=cda4c17e92b7aad8b67f2ef4f1fdca0b6fd07adcb9d49ef3a7f0bc685b53010b
-    POCKET_API_KEY=zlbB2tOFJkusK1CQYaqERKpjBNZHuFti
-    POCKET_API_URL_BASE=https://pocket.njord.ljunker.de/api/
   dbconn.env.example: |-
     POSTGRES_USER=lars
     POSTGRES_PASSWORD=test
@@ -343,7 +341,6 @@ data:
     DATABASE_URL=postgresql://lars:test@db:5432/stats_db
     FLASK_SECRET_KEY=supersecretflaskkey
     PROMETHEUS_API_KEY=supersecretprometheuskey
-    POCKET_API_KEY=supersecretpocketkey
   docker-compose.yml: |
     services:
       db:
