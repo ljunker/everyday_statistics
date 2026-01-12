@@ -18,79 +18,95 @@ Use it at your own risk and always back up your data!
 
 ## 🚀 Getting Started
 
-### 1️⃣ Clone the repo
+### 1️⃣ Setup & Start
 
+The easiest way to get started is to use the `setup.sh` script. It will create your `.env` file, generate random API keys, initialize the database, and start the services.
+
+```bash
+git clone git@github.com:ljunker/everyday_statistics.git everyday_statistics
+cd everyday_statistics
+./setup.sh
+```
+
+After the script finishes, it will display your `APP_API_KEY`. You can then access the dashboard at `http://localhost:45000`.
+
+---
+
+### 2️⃣ Manual Setup (Alternative)
+
+If you prefer to set up the project manually without the `setup.sh` script, follow these steps:
+
+#### **Step A: Clone the repository**
 ```bash
 git clone git@github.com:ljunker/everyday_statistics.git everyday_statistics
 cd everyday_statistics
 ```
 
----
-
-### 2️⃣ Create your `.env`
-
-Copy the `dbconn.env.example` to `dbconn.env`:
-
+#### **Step B: Configure environment variables**
+Copy the example environment file and edit it with your desired keys:
 ```bash
 cp dbconn.env.example dbconn.env
 ```
-Configure the postgres user, password and db to anything you like (but make it secure ffs...).
-The `DATABASE_URL`, `PROMETHEUS_API_KEY`, `APP_API_KEY` and `FLASK_SECRET_KEY` are for the flask server. Generate a good secret key with:
+Open `dbconn.env` and set your own secure values for:
+- `APP_API_KEY`: Your main secret key for accessing the API and Dashboard.
+- `FLASK_SECRET_KEY`: Used by Flask for session signing.
+- `PROMETHEUS_API_KEY`: Used to protect the `/metrics` endpoint.
 
+You can generate good secret keys with:
 ```bash
-openssl rand -hex 32
+openssl rand -hey 32
 ```
 
-Then copy the generated key into your `.env` file as `FLASK_SECRET_KEY` and `APP_API_KEY`.
-
----
-
-### 3️⃣ Initialize the database
-
-Before first run, create the tables:
-
+#### **Step C: Build and start the containers**
+Use the provided `upgrade.sh` script to build the image and initialize the database tables:
 ```bash
 ./upgrade.sh
 ```
 
-### 4️⃣ Build & start services
-
-Use Docker Compose to build and run everything:
-
+*Or, if you want to do it purely via Docker commands:*
 ```bash
-docker compose up --build
+docker compose up --build -d
+docker compose exec web python3 -c "from src.app import app; from src.db import db; with app.app_context(): db.create_all()"
 ```
 
-Add `-d` to run in detached mode (background).
-
-This starts:
-- `web` → Flask app with SQLite database
+#### **Step D: Access the application**
+- **Dashboard**: [http://localhost:45000](http://localhost:45000) (Login with your `APP_API_KEY`)
+- **API**: [http://localhost:45000/events](http://localhost:45000/events) (Requires `X-API-KEY` header)
+- **Metrics**: [http://localhost:45000/metrics](http://localhost:45000/metrics) (Requires `X-API-KEY` header with `PROMETHEUS_API_KEY`)
 
 ---
 
 ## 🔑 Authentication
 
-All requests must include the `X-API-KEY` header. It will be generated when you create a user.
+All API requests must include the `X-API-KEY` header.
 
 Example header:
 ```
-X-API-KEY: supersecretkey
+X-API-KEY: your_app_api_key
 ```
+
+Note: The `/metrics` endpoint requires the `PROMETHEUS_API_KEY` in the `X-API-KEY` header instead.
 
 ---
 
 ## 🧪 Example API Usage
 
+Replace `your_app_api_key` with your actual `APP_API_KEY`.
+
 **Record an event:**
 
 ```bash
-curl -X POST http://localhost:5000/events   -H "Content-Type: application/json"   -H "X-API-KEY: supersecretkey"   -d '{"type": "poop"}'
+curl -X POST http://localhost:45000/events \
+     -H "Content-Type: application/json" \
+     -H "X-API-KEY: your_app_api_key" \
+     -d '{"type": "poop"}'
 ```
 
 **Get stats:**
 
 ```bash
-curl http://localhost:5000/stats   -H "X-API-KEY: supersecretkey"
+curl http://localhost:45000/stats \
+     -H "X-API-KEY: your_app_api_key"
 ```
 
 ---
