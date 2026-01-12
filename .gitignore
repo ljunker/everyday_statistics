@@ -2,3 +2,5 @@
 .venv
 dbconn.env
 **/__pycache__/
+
+instance
