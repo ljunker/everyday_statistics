@@ -67,7 +67,7 @@ def soft_delete_events_by_type():
 @events_bp.route('/events/<int:event_id>', methods=['DELETE'])
 @api_key_required
 def delete_event(event_id):
-    event = Event.query.get(event_id)
+    event = db.session.get(Event, event_id)
     if not event:
         return jsonify({'error': 'Event not found'}), 404
 
@@ -106,7 +106,7 @@ def get_deleted_events():
 @events_bp.route('/events/restore/<int:event_id>', methods=['POST'])
 @api_key_required
 def restore_event(event_id):
-    event = Event.query.get(event_id)
+    event = db.session.get(Event, event_id)
     if not event:
         return jsonify({'error': 'Event not found'}), 404
 
@@ -130,7 +130,7 @@ def restore_event(event_id):
 @api_key_required
 def update_event(event_id):
     data = request.get_json()
-    event = Event.query.get(event_id)
+    event = db.session.get(Event, event_id)
     if not event or event.deleted:
         return jsonify({'error': 'Event not found'}), 404
 
@@ -189,7 +189,7 @@ def create_mapping():
 @events_bp.route('/mappings/<int:id>', methods=['PUT'])
 @api_key_required
 def update_mapping(id):
-    mapping = TypeMapping.query.get(id)
+    mapping = db.session.get(TypeMapping, id)
     if not mapping:
         return jsonify({'error': 'Mapping not found'}), 404
 
@@ -203,7 +203,7 @@ def update_mapping(id):
 @events_bp.route('/mappings/<int:id>', methods=['DELETE'])
 @api_key_required
 def delete_mapping(id):
-    mapping = TypeMapping.query.get(id)
+    mapping = db.session.get(TypeMapping, id)
     if not mapping:
         return jsonify({'error': 'Mapping not found'}), 404
 
