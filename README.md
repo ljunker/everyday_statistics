@@ -1,4 +1,4 @@
-# Everyday Statistics Service 🚽📊
+# Everyday Statistics Service
 
 ![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)
 
@@ -7,7 +7,7 @@ Built for fun, stats, and easy expansion. Containerized with Docker Compose.
 
 ---
 
-⚠️ **WARNING: This project is under active development**
+**WARNING: This project is under active development**
 
 This service is experimental and may change or break at any time.  
 It is **not stable for production use yet** — expect breaking changes, bugs, and incomplete features.
@@ -16,9 +16,9 @@ Use it at your own risk and always back up your data!
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
-### 1️⃣ Setup & Start
+### Setup & Start
 
 The easiest way to get started is to use the `setup.sh` script. It will create your `.env` file, generate random API keys, initialize the database, and start the services.
 
@@ -32,7 +32,7 @@ After the script finishes, it will display your `APP_API_KEY`. You can then acce
 
 ---
 
-### 2️⃣ Manual Setup (Alternative)
+### Manual Setup (Alternative)
 
 If you prefer to set up the project manually without the `setup.sh` script, follow these steps:
 
@@ -76,7 +76,7 @@ docker compose exec web python3 -c "from src.app import app; from src.db import 
 
 ---
 
-## 🔑 Authentication
+## Authentication
 
 All API requests must include the `X-API-KEY` header.
 
@@ -89,7 +89,7 @@ Note: The `/metrics` endpoint requires the `PROMETHEUS_API_KEY` in the `X-API-KE
 
 ---
 
-## 🧪 Example API Usage
+## Example API Usage
 
 Replace `your_app_api_key` with your actual `APP_API_KEY`.
 
@@ -111,9 +111,9 @@ curl http://localhost:45000/stats \
 
 ---
 
-## ⚙️ Common Commands
+## Common Commands
 
-🔄 **Force rebuild everything:**
+**Force rebuild everything:**
 
 ```bash
 docker compose up --build --force-recreate --remove-orphans
@@ -121,7 +121,7 @@ docker compose up --build --force-recreate --remove-orphans
 
 ---
 
-## 🧪 Testing
+## Testing
 
 To run the tests and see the coverage report:
 
@@ -138,9 +138,9 @@ python3 -m pytest --cov=src --cov-report=term-missing
 
 ---
 
-## 💡 Tips
+## Tips
 
-- ✅ Keep your `.env` out of version control (`.gitignore` it!).
-- ✅ For production, consider using Docker secrets for API keys.  
+- Keep your `.env` out of version control (`.gitignore` it!).
+- For production, consider using Docker secrets for API keys.
 
 ---

@@ -13,7 +13,7 @@ from src.scheduler import get_scheduler
 def create_app(test_config=None):
     app = Flask(__name__)
 
-    # ✅ Load default config from environment
+    # Load default config from environment
     default_db = 'sqlite:///instance/stats.db'
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', default_db)
     if test_config is not None and test_config.get('SQLALCHEMY_DATABASE_URI'):
@@ -37,13 +37,13 @@ def create_app(test_config=None):
 
     app.config['SCHEDULER_API_ENABLED'] = True
 
-    # ✅ Initialize the scheduler
+    # Initialize the scheduler
     scheduler = get_scheduler()
     if test_config and not test_config.get('TESTING', True):
         scheduler.init_app(app)
         scheduler.start()
 
-    # ✅ Allow test overrides
+    # Allow test overrides
     if test_config:
         # Don't overwrite SQLALCHEMY_DATABASE_URI if we already resolved it to absolute
         db_uri = app.config.get('SQLALCHEMY_DATABASE_URI')
@@ -51,14 +51,14 @@ def create_app(test_config=None):
         if db_uri and db_uri.startswith('sqlite:////'):
              app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 
-    # ✅ Initialize extensions
+    # Initialize extensions
     db.init_app(app)
 
     app.register_blueprint(events_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(main_bp)
 
-    # ✅ Set up logging
+    # Set up logging
     init_logger(app.logger)
 
     return app
