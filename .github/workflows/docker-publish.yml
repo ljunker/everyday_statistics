@@ -27,4 +27,4 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: kryptikker/everyday_statistics:latest,kryptikker/everyday_statistics:${{ github.sha }}
+          tags: kryptikker/everyday_statistics:latest,kryptikker/everyday_statistics:v${{ github.run_number }}
