@@ -7,7 +7,7 @@
 ![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)
 
 A tiny Flask + SQLite service to track everyday events — like when you poop!  
-Built for fun, stats, and easy expansion. Containerized with Docker Compose.
+Built for fun, stats, and easy expansion. Containerized with Docker Compose using a highly optimized, multi-stage Alpine-based image (~85MB).
 
 ---
 
