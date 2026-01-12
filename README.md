@@ -123,6 +123,16 @@ curl http://localhost:45000/stats \
 docker compose up --build --force-recreate --remove-orphans
 ```
 
+**Run local security scan:**
+
+To scan the Docker image for vulnerabilities using Trivy:
+
+```bash
+./scan_image.sh
+```
+
+This script will build the image and run a scan for `HIGH` and `CRITICAL` vulnerabilities. If you don't have Trivy installed locally, it will automatically run it via Docker.
+
 ---
 
 ## Testing
