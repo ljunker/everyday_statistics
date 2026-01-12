@@ -2,7 +2,7 @@
 
 ![Build Status](https://github.com/ljunker/everyday_statistics/actions/workflows/docker-publish.yml/badge.svg)
 ![License](https://img.shields.io/github/license/ljunker/everyday_statistics)
-![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
+![Python Version](https://img.shields.io/badge/python-3.13%2B-blue)
 ![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)
 
 A tiny Flask + SQLite service to track everyday events — like when you poop!  

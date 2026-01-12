@@ -137,7 +137,7 @@ data:
   CONTRIBUTING.md: "# Contributing to Everyday Statistics Service\n\nThanks for your interest in contributing!\n\n---\n\n## What this project does\n\nThis is a simple, self-hosted service for tracking everyday events (like pooping, coffee, walks) using Flask, Postgres, and Docker Compose.  \nIt has API key authentication, a web dashboard, backups, user management, and more.\n\n---\n\n## How to get started\n\n1. **Fork this repo** and clone your fork locally.\n2. Create a new branch for your changes:\n   ```bash\n   git checkout -b my-feature-branch\n   ```\n\n3. **Run it locally**:\n   ```bash\n   docker-compose up --build\n   ```\n   Use the `.env` file to set your API key and DB credentials.\n\n4. Make your changes!\n\n5. **Write clear commit messages.**\n\n6. Push to your fork and open a **pull request**.  \n   Describe what your change does and why it’s useful.\n\n---\n\n## What’s welcome\n\n- Fix bugs\n- Add new stats, insights, or charts\n- Improve the frontend (UI/UX)\n- Add more endpoints or filters\n- Polish docs\n- Help with tests\n\n---\n\n## Code style\n\n- Keep it simple and readable.\n- Use existing Python, Flask, and SQLAlchemy patterns.\n- Add comments if something’s not obvious.\n\n---\n\n## Security\n\nIf you find a security issue (e.g., API key handling, auth bugs), **please report it privately** first instead of opening a public issue.\n\n---\n\n## Code of conduct\n\nBe respectful, constructive, and collaborative.  \nNo poop jokes that cross the line.\n\n---\n\nThanks for helping make Everyday Statistics better!\n"
   Dockerfile: |
     # Use an official Python image
-    FROM python:3.12
+    FROM python:3.13
 
     WORKDIR /app
 
