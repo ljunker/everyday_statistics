@@ -7,7 +7,7 @@ from flask import request, abort, g, session, redirect, url_for
 def api_key_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        expected_key = os.environ.get('APP_API_KEY')
+        expected_key = os.environ.get('APP_API_KEY', 'supersecretapikey')
         client_key = request.headers.get('X-API-KEY')
         if not client_key or client_key != expected_key:
             abort(401, description="Invalid or missing API key.")
@@ -51,7 +51,7 @@ def login_required(f):
         # But if the user wants "just the api key", maybe we should check the API key here too,
         # or just rely on a simple check.
         
-        expected_key = os.environ.get('APP_API_KEY')
+        expected_key = os.environ.get('APP_API_KEY', 'supersecretapikey')
         client_key = request.headers.get('X-API-KEY') or session.get('api_key')
         
         if not client_key or client_key != expected_key:

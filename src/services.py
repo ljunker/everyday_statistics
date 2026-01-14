@@ -23,6 +23,11 @@ def get_event_stats(event_type=None):
         func.date(Event.timestamp) == today
     ).count()
 
+    year_start = datetime(today.year, 1, 1).date()
+    year_count = query.filter(
+        func.date(Event.timestamp) >= year_start
+    ).count()
+
     first_event = db.session.query(func.min(Event.timestamp)).filter(Event.deleted == False)
     if event_type:
         first_event = first_event.filter(Event.type == event_type)
@@ -102,6 +107,7 @@ def get_event_stats(event_type=None):
     return {
         'type': event_type or 'all',
         'today_count': today_count,
+        'year_count': year_count,
         'total_count': total_count,
         'average_per_day': average_per_day,
         'longest_streak_days': longest_streak,
