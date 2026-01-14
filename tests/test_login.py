@@ -55,6 +55,13 @@ def test_api_fails_without_header(client, monkeypatch):
     response = client.get('/events')
     assert response.status_code == 401
 
+def test_decorators_abort_401(client, monkeypatch):
+    # Test line 63 of decorators.py
+    # This happens when login_required is called on an API-like path without session or API key
+    monkeypatch.setenv('APP_API_KEY', 'secret')
+    resp = client.get('/stats', follow_redirects=False)
+    assert resp.status_code == 401
+
 def test_prometheus_api_key_required(client, monkeypatch):
     monkeypatch.setenv('PROMETHEUS_API_KEY', 'prom_key')
 

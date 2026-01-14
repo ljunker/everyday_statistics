@@ -152,10 +152,16 @@ def update_event(event_id):
 def stats():
     event_type = request.args.get('type')
     if event_type:
-        stats = get_event_stats(event_type)
+        stats_data = get_event_stats(event_type)
     else:
-        stats = get_all_stats()
-    return jsonify(stats)
+        stats_data = get_event_stats()  # Returns combined stats when no type is provided
+    return jsonify(stats_data)
+
+
+@events_bp.route('/stats/types', methods=['GET'])
+@api_key_required
+def stats_per_type():
+    return jsonify(get_all_stats())
 
 
 @events_bp.route('/types', methods=['GET'])

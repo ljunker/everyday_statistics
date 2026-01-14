@@ -1,3 +1,7 @@
+from datetime import datetime, UTC
+from src.models import Event
+from src.db import db
+
 def test_create_event(client, monkeypatch):
     api_key = 'test_api_key'
     monkeypatch.setenv('APP_API_KEY', api_key)
@@ -129,3 +133,45 @@ def test_event_errors(client, monkeypatch):
     # 8. Timeline - invalid date
     response = client.get('/timeline?date=not-a-date', headers={'X-API-KEY': api_key})
     assert response.status_code == 400
+
+def test_routes_event_more_coverage(client, monkeypatch):
+    api_key = 'test_api_key'
+    monkeypatch.setenv('APP_API_KEY', api_key)
+
+    # 1. Test filtering events by type in get_events
+    db.session.add(Event(type='type1', timestamp=datetime.now(UTC)))
+    db.session.add(Event(type='type2', timestamp=datetime.now(UTC)))
+    db.session.commit()
+
+    resp = client.get('/events?type=type1', headers={'X-API-KEY': api_key})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert len(data['events']) == 1
+    assert data['events'][0]['type'] == 'type1'
+
+    # 2. Test soft_delete_events_by_type
+    resp = client.delete('/events?type=type1', headers={'X-API-KEY': api_key})
+    assert resp.status_code == 200
+    assert 'Marked 1 events' in resp.get_json()['message']
+
+    # 3. Test get_event_types
+    resp = client.get('/types', headers={'X-API-KEY': api_key})
+    assert resp.status_code == 200
+    assert 'type2' in resp.get_json()['event_types']
+    assert 'type1' not in resp.get_json()['event_types'] # because it's deleted
+
+    # 4. Test timeline filtering by type
+    now = datetime.now(UTC)
+    date_str = now.strftime('%Y-%m-%d')
+    db.session.add(Event(type='timeline_type', timestamp=now))
+    db.session.commit()
+
+    resp = client.get(f'/timeline?date={date_str}&type=timeline_type', headers={'X-API-KEY': api_key})
+    assert resp.status_code == 200
+    assert date_str in resp.get_json()['timeline']
+    assert len(resp.get_json()['timeline'][date_str]) == 1
+
+    # 5. Test stats with type
+    resp = client.get('/stats?type=type2', headers={'X-API-KEY': api_key})
+    assert resp.status_code == 200
+    assert resp.get_json()['type'] == 'type2'
