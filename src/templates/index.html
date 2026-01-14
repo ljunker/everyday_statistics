@@ -65,6 +65,10 @@
         Add New Event
     </button>
 
+    <div id="shortcuts" class="mb-4">
+        <!-- Shortcut buttons will be added here -->
+    </div>
+
     <!-- Dropdown for selecting type -->
     <div class="mb-4">
         <label for="typeSelect" class="form-label">Select Event Type:</label>
@@ -436,12 +440,38 @@
     async function init() {
       const types = await fetchTypes();
       const select = document.getElementById('typeSelect');
+      const shortcutsDiv = document.getElementById('shortcuts');
+      const apiKey = document.body.dataset.apiKey;
 
       types.forEach(type => {
         const opt = document.createElement('option');
         opt.value = type;
         opt.innerText = type;
         select.appendChild(opt);
+
+        // Add shortcut button
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline-info me-2 mb-2';
+        btn.innerText = `+ ${type}`;
+        btn.onclick = async () => {
+          const res = await fetch('/events', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-KEY': apiKey
+            },
+            body: JSON.stringify({ type: type })
+          });
+          if (res.ok) {
+            const selectedType = select.value || '';
+            await loadStats(selectedType);
+            await loadTimeline(selectedType);
+            giveEventListeners();
+          } else {
+            alert('Failed to add event via shortcut.');
+          }
+        };
+        shortcutsDiv.appendChild(btn);
       });
 
       await loadStats('');
